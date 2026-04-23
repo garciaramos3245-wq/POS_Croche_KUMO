@@ -12,6 +12,18 @@ Public Class Form7
 
     Public Sub New()
         InitializeComponent()
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                dtpFecha.Value = Today
+                ModEstilo.EstilarControles(Me)
+                ModEstilo.EstilarStatusStrip(StatusStrip1)
+                ModEstilo.EstilarBotonPrimario(btnVer)
+                ModEstilo.EstilarBotonSecundario(btnHoy)
+                ModEstilo.EstilarBotonSecundario(btnImprimir)
+                ModEstilo.EstilarBotonPeligro(btnRegresar)
+                AplicarEstiloReportePremium()
+                ConfigurarLayoutReporte()
+            End Sub)
     End Sub
 
     <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>

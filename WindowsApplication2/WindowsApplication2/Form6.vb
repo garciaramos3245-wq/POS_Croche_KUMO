@@ -9,9 +9,40 @@ Public Class Form6
     Private ReadOnly CLR_TEXT_PREMIUM As Color = Color.FromArgb(76, 66, 55)
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
 
-    Public Sub New(id As Integer)
+    Public Sub New(Optional id As Integer = 0)
         InitializeComponent()
         idVenta = id
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                ModEstilo.EstilarControles(Me)
+                ModEstilo.EstilarBotonPrimario(btnImprimir)
+                ModEstilo.EstilarBotonSecundario(btnCerrar)
+
+                Me.BackColor = CLR_BG_PREMIUM
+                pnlHeader.BackColor = CLR_PANEL_PREMIUM
+                InsertarLogoHeader()
+                lblTitulo.ForeColor = CLR_DARK_PREMIUM
+                lblTitulo.Text = "KUMO | Ticket premium"
+                pnlLinea.BackColor = Color.FromArgb(214, 189, 150)
+                gbPreview.BackColor = CLR_SURFACE_PREMIUM
+                gbPreview.ForeColor = CLR_TEXT_PREMIUM
+                gbPreview.Text = "Vista previa del ticket"
+                rtb.BackColor = CLR_SURFACE_PREMIUM
+                rtb.ForeColor = CLR_TEXT_PREMIUM
+                rtb.BorderStyle = BorderStyle.None
+                btnImprimir.Text = "Vista de impresion"
+                btnCerrar.Text = "Cerrar ticket"
+                btnImprimir.BackColor = CLR_DARK_PREMIUM
+                btnImprimir.ForeColor = Color.White
+                btnImprimir.FlatAppearance.MouseOverBackColor = Color.FromArgb(67, 74, 84)
+                btnCerrar.BackColor = CLR_PANEL_PREMIUM
+                btnCerrar.ForeColor = CLR_TEXT_PREMIUM
+                btnCerrar.FlatAppearance.BorderColor = Color.FromArgb(214, 189, 150)
+                btnCerrar.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 235, 224)
+                Me.Text = "Ticket de Venta - V-000"
+                rtb.Text = "Vista previa del ticket KUMO"
+                ConfigurarLayoutTicket()
+            End Sub)
     End Sub
 
     Private Sub Form6_Load(sender As Object, e As EventArgs) Handles MyBase.Load

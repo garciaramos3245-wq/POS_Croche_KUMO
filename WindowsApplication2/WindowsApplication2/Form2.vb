@@ -34,6 +34,22 @@ Public Class Form2
 
     Public Sub New()
         InitializeComponent()
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                InicializarComponentesPOS()
+                ModEstilo.EstilarControles(Me)
+                ModEstilo.CargarLogo(picMarca)
+                ModEstilo.CargarLogo(picTopLogo)
+                ModEstilo.EstilarBotonPrimario(btnAgregar)
+                ModEstilo.EstilarBotonCobrar(btnCobrar)
+                ModEstilo.EstilarBotonSecundario(btnLimpiar)
+                ModEstilo.EstilarBotonSecundario(btnQuitar)
+                ModEstilo.EstilarBotonSecundario(btnSalida)
+                ModEstilo.EstilarMenuStrip(MenuStrip1)
+                ModEstilo.EstilarStatusStrip(StatusStrip1)
+                AplicarEstiloPOS()
+                ConfigurarPantallaPOS()
+            End Sub)
     End Sub
 
     Private dtCarrito As New DataTable
@@ -694,10 +710,24 @@ Public Class Form2
     End Sub
 
     Private Sub btnQuitar_Click(sender As Object, e As EventArgs) Handles btnQuitar.Click
-        If dgvCarrito.CurrentRow IsNot Nothing Then
-            dgvCarrito.CurrentRow.DataBoundItem.Row.Delete()
-            RecalcularTotales()
+        If dgvCarrito.CurrentRow Is Nothing Then
+            MsgBox("Selecciona un producto del carrito.")
+            Return
         End If
+
+        Dim fila = TryCast(dgvCarrito.CurrentRow.DataBoundItem, DataRowView)
+        If fila Is Nothing Then Return
+
+        Dim cantidadActual As Integer = CInt(fila.Row("Cantidad"))
+        If cantidadActual > 1 Then
+            Dim nuevaCantidad As Integer = cantidadActual - 1
+            fila.Row("Cantidad") = nuevaCantidad
+            fila.Row("SubTotal") = CDec(fila.Row("Precio")) * nuevaCantidad
+        Else
+            fila.Row.Delete()
+        End If
+
+        RecalcularTotales()
     End Sub
 
     Private Sub btnLimpiar_Click(sender As Object, e As EventArgs) Handles btnLimpiar.Click
@@ -727,16 +757,27 @@ Public Class Form2
         Return pct
     End Function
 
+    Private Function ObtenerTotalPiezasCarrito() As Integer
+        Dim total As Integer = 0
+        For Each row As DataRow In dtCarrito.Rows
+            If row.RowState <> DataRowState.Deleted Then
+                total += CInt(row("Cantidad"))
+            End If
+        Next
+        Return total
+    End Function
+
     Private Sub RecalcularTotales()
         Dim subtotal As Decimal = CalcularSubtotal()
         Dim pct As Decimal = ObtenerDescuentoPct()
         Dim descuento As Decimal = subtotal * pct / 100D
         Dim total As Decimal = subtotal - descuento
+        Dim piezas As Integer = ObtenerTotalPiezasCarrito()
 
         lblSubtotal.Text = "$" & subtotal.ToString("N2")
         lblDescuento.Text = "-$" & descuento.ToString("N2")
         lblTotal.Text = "$" & total.ToString("N2")
-        sbInfo.Text = "   Ticket activo: " & dtCarrito.Rows.Count & " producto(s)   |   Cobro estimado: $" & total.ToString("N2")
+        sbInfo.Text = "   Ticket activo: " & piezas & " pieza(s)   |   Cobro estimado: $" & total.ToString("N2")
         ActualizarIndicadoresPOS()
     End Sub
 
@@ -745,7 +786,7 @@ Public Class Form2
 
         Dim visibles As Integer = 0
         Dim categorias As Integer = Math.Max(0, cbCategoria.Items.Count - 1)
-        Dim articulosEnCarrito As Integer = dtCarrito.Rows.Count
+        Dim articulosEnCarrito As Integer = ObtenerTotalPiezasCarrito()
 
         If dtProductos IsNot Nothing Then
             visibles = dtProductos.DefaultView.Count
@@ -771,9 +812,10 @@ Public Class Form2
         Dim pct As Decimal = ObtenerDescuentoPct()
         Dim descuento As Decimal = subtotal * pct / 100D
         Dim total As Decimal = subtotal - descuento
+        Dim piezas As Integer = ObtenerTotalPiezasCarrito()
 
         Dim msg As String = "Confirmar venta?" & vbNewLine & vbNewLine &
-                            "Articulos: " & dtCarrito.Rows.Count & vbNewLine &
+                            "Articulos: " & piezas & vbNewLine &
                             "Subtotal:  $" & subtotal.ToString("N2") & vbNewLine &
                             "Descuento: -$" & descuento.ToString("N2") & vbNewLine &
                             "Total:     $" & total.ToString("N2")

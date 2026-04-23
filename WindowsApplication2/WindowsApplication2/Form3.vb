@@ -13,10 +13,15 @@ Public Class Form3
 
     Public Sub New()
         InitializeComponent()
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                AplicarTemaInventario()
+            End Sub)
     End Sub
 
     Private dtProductos As New DataTable
     Private idSeleccionado As Integer = 0
+    Private _temaAplicado As Boolean = False
 
     Private Function TablaCategorias() As String
         Return "[CATEGOR" & ChrW(205) & "A]"
@@ -36,8 +41,17 @@ Public Class Form3
     Private Sub Form3_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
         AddHandler ModActualizaciones.InventarioActualizado, AddressOf RefrescarInventario
+        AplicarTemaInventario()
         CargarCategorias()
         CargarProductos()
+    End Sub
+
+    Private Sub AplicarTemaInventario()
+        If _temaAplicado Then
+            ConfigurarLayoutInventario()
+            Return
+        End If
+
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
         ModEstilo.EstilarBotonPrimario(btnGuardar)
@@ -48,6 +62,7 @@ Public Class Form3
         ModEstilo.EstilarBotonPeligro(btnRegresar)
         AplicarEstiloInventarioPremium()
         ConfigurarLayoutInventario()
+        _temaAplicado = True
     End Sub
 
     Private Sub AplicarEstiloInventarioPremium()
@@ -57,6 +72,7 @@ Public Class Form3
         gbFiltro.BackColor = CLR_PANEL_PREMIUM
         gbFiltro.ForeColor = CLR_TEXT_PREMIUM
         gbFiltro.Text = "Filtro comercial"
+        gbFiltro.Region = Nothing
 
         gbTabla.BackColor = CLR_SURFACE_PREMIUM
         gbTabla.ForeColor = CLR_TEXT_PREMIUM
@@ -81,9 +97,9 @@ Public Class Form3
         btnFiltrar.Text = "Filtrar"
         btnRegresar.Text = "Cerrar"
 
-        For Each gb As GroupBox In New GroupBox() {gbFiltro, gbTabla, gbDetalle}
-            gb.Padding = New Padding(8)
-        Next
+        gbFiltro.Padding = New Padding(18, 24, 18, 16)
+        gbTabla.Padding = New Padding(8)
+        gbDetalle.Padding = New Padding(14, 28, 14, 14)
 
         For Each lbl As Label In New Label() {lblBuscar, lblCatTxt, lblNombreTxt, lblPrecioTxt, lblStockTxt, lblCatDetTxt}
             lbl.ForeColor = CLR_MUTED_PREMIUM
@@ -162,7 +178,8 @@ Public Class Form3
         Dim panelDerecho As Integer = Math.Max(420, Math.Min(500, CInt(Me.ClientSize.Width * 0.31)))
         Dim anchoIzquierdo As Integer = Me.ClientSize.Width - panelDerecho - (margen * 3)
         Dim altoDisponible As Integer = Me.ClientSize.Height - StatusStrip1.Height - (margen * 2)
-        Dim yBloques As Integer = top + altoBoton + 14
+        Dim yBloques As Integer = top + altoBoton + 28
+        Dim altoDetalle As Integer = altoDisponible - altoBoton - 14
 
         btnNuevo.SetBounds(margen, top, 120, altoBoton)
         btnGuardar.SetBounds(btnNuevo.Right + 12, top, 120, altoBoton)
@@ -170,29 +187,52 @@ Public Class Form3
         btnActualizar.SetBounds(btnEliminar.Right + 12, top, 138, altoBoton)
         btnRegresar.SetBounds(Me.ClientSize.Width - margen - 118, top, 118, altoBoton)
 
-        gbFiltro.SetBounds(margen, yBloques, anchoIzquierdo, 86)
-        gbTabla.SetBounds(margen, gbFiltro.Bottom + 14, anchoIzquierdo, altoDisponible - gbFiltro.Height - altoBoton - 28)
-        gbDetalle.SetBounds(gbFiltro.Right + margen, yBloques, panelDerecho, altoDisponible - altoBoton)
+        Dim altoFiltro As Integer = 118
 
-        lblBuscar.Location = New Point(18, 30)
-        txtBuscar.SetBounds(18, 50, Math.Max(220, gbFiltro.Width - 470), 34)
-        lblCatTxt.Location = New Point(txtBuscar.Right + 18, 30)
-        cbCategoria.SetBounds(txtBuscar.Right + 18, 50, 180, 32)
-        btnFiltrar.SetBounds(gbFiltro.Width - 126, 48, 108, 36)
+        gbFiltro.SetBounds(margen, yBloques, anchoIzquierdo, altoFiltro)
+        gbTabla.SetBounds(margen, gbFiltro.Bottom + 14, anchoIzquierdo, altoDisponible - gbFiltro.Height - altoBoton - 28)
+        gbDetalle.SetBounds(gbFiltro.Right + margen, yBloques, panelDerecho, altoDetalle)
+        Dim margenInternoIzq As Integer = 18
+        Dim margenInternoDer As Integer = 18
+        Dim anchoCliente As Integer = gbFiltro.ClientSize.Width
+        Dim anchoBotonFiltrar As Integer = 96
+        Dim anchoCategoria As Integer = Math.Max(180, Math.Min(210, CInt(anchoCliente * 0.24)))
+        Dim separacion As Integer = 16
+        Dim xBotonFiltrar As Integer = anchoCliente - margenInternoDer - anchoBotonFiltrar
+        Dim xCategoria As Integer = xBotonFiltrar - separacion - anchoCategoria
+        Dim anchoBusqueda As Integer = Math.Max(260, xCategoria - margenInternoIzq - separacion)
+        Dim yEtiqueta As Integer = 30
+        Dim yControl As Integer = 54
+
+        lblBuscar.Location = New Point(margenInternoIzq, yEtiqueta)
+        txtBuscar.SetBounds(margenInternoIzq, yControl, anchoBusqueda, 34)
+        lblCatTxt.Location = New Point(xCategoria, yEtiqueta)
+        cbCategoria.SetBounds(xCategoria, yControl, anchoCategoria, 34)
+        btnFiltrar.SetBounds(xBotonFiltrar, yControl, anchoBotonFiltrar, 36)
+        btnFiltrar.BringToFront()
 
         dgv.SetBounds(14, 30, gbTabla.Width - 28, gbTabla.Height - 72)
         lblInfo.Location = New Point(16, gbTabla.Height - 34)
 
         Dim pad As Integer = 18
         Dim anchoCampo As Integer = gbDetalle.Width - (pad * 2)
-        lblNombreTxt.Location = New Point(pad, 38)
-        txtNombre.SetBounds(pad, 60, anchoCampo, 34)
-        lblPrecioTxt.Location = New Point(pad, 108)
-        txtPrecio.SetBounds(pad, 130, anchoCampo, 34)
-        lblStockTxt.Location = New Point(pad, 178)
-        txtStock.SetBounds(pad, 200, anchoCampo, 34)
-        lblCatDetTxt.Location = New Point(pad, 248)
-        cbCatDetalle.SetBounds(pad, 270, anchoCampo, 34)
+        Dim y As Integer = 42
+        Dim espVertical As Integer = 18
+        Dim altoCampo As Integer = 36
+        Dim anchoMedio As Integer = (anchoCampo - 12) \ 2
+
+        lblNombreTxt.Location = New Point(pad, y)
+        txtNombre.SetBounds(pad, y + 24, anchoCampo, altoCampo)
+
+        y += 24 + altoCampo + espVertical
+        lblPrecioTxt.Location = New Point(pad, y)
+        lblStockTxt.Location = New Point(pad + anchoMedio + 12, y)
+        txtPrecio.SetBounds(pad, y + 24, anchoMedio, altoCampo)
+        txtStock.SetBounds(pad + anchoMedio + 12, y + 24, anchoMedio, altoCampo)
+
+        y += 24 + altoCampo + espVertical
+        lblCatDetTxt.Location = New Point(pad, y)
+        cbCatDetalle.SetBounds(pad, y + 24, anchoCampo, altoCampo)
 
         gbFiltro.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         gbTabla.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right

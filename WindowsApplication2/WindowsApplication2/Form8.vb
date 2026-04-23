@@ -13,6 +13,18 @@ Public Class Form8
 
     Public Sub New()
         InitializeComponent()
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                dtpFecha.Value = Today
+                ModEstilo.EstilarControles(Me)
+                ModEstilo.EstilarStatusStrip(StatusStrip1)
+                ModEstilo.EstilarBotonPrimario(btnBuscar)
+                ModEstilo.EstilarBotonSecundario(btnHoy)
+                ModEstilo.EstilarBotonPeligro(btnCancelar)
+                ModEstilo.EstilarBotonPeligro(btnRegresar)
+                AplicarEstiloCancelacionesPremium()
+                ConfigurarLayoutCancelaciones()
+            End Sub)
     End Sub
 
     <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>

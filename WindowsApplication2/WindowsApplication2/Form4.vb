@@ -1,4 +1,3 @@
-Imports System.Runtime.InteropServices
 Imports System.Data.SqlClient
 
 Public Class Form4
@@ -9,97 +8,144 @@ Public Class Form4
     Private ReadOnly CLR_TEXT_PREMIUM As Color = Color.FromArgb(76, 66, 55)
     Private ReadOnly CLR_MUTED_PREMIUM As Color = Color.FromArgb(136, 118, 94)
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
+    Private ReadOnly CLR_GOLD_PREMIUM As Color = Color.FromArgb(214, 189, 150)
+    Private ReadOnly CLR_GREEN_PREMIUM As Color = Color.FromArgb(74, 133, 95)
+    Private ReadOnly CLR_RED_PREMIUM As Color = Color.FromArgb(154, 73, 64)
 
     Public Sub New()
         InitializeComponent()
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                PrepararFormularioHistorial()
+                AplicarEstilo()
+                dtpFecha.Value = Today
+                ConfigurarLayoutHistorial()
+            End Sub)
     End Sub
-
-    <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
-    Private Shared Function CreateRoundRectRgn(
-        ByVal nLeftRect As Integer,
-        ByVal nTopRect As Integer,
-        ByVal nRightRect As Integer,
-        ByVal nBottomRect As Integer,
-        ByVal nWidthEllipse As Integer,
-        ByVal nHeightEllipse As Integer
-    ) As IntPtr
-    End Function
 
     Private Sub Form4_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ModEstilo.PrepararVentana(Me)
         AddHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
-        Try
-            dtpFecha.Value = Today
-            CargarVentas()
-            ModEstilo.EstilarControles(Me)
-            ModEstilo.EstilarStatusStrip(StatusStrip1)
-            ModEstilo.EstilarBotonPrimario(btnBuscar)
-            ModEstilo.EstilarBotonSecundario(btnHoy)
-            ModEstilo.EstilarBotonSecundario(btnTicket)
-            ModEstilo.EstilarBotonSecundario(btnImprimir)
-            ModEstilo.EstilarBotonPeligro(btnRegresar)
-            AplicarEstiloHistorialPremium()
-            ConfigurarLayoutHistorial()
-        Catch ex As Exception
-            MsgBox("Error en Form4_Load: " & ex.Message & vbNewLine & ex.StackTrace)
-        End Try
+        ModEstilo.PrepararVentana(Me)
+        PrepararFormularioHistorial()
+        AplicarEstilo()
+        dtpFecha.Value = Today
+        CargarVentas()
     End Sub
 
-    Private Sub AplicarEstiloHistorialPremium()
+    Private Sub PrepararFormularioHistorial()
+        Me.MinimumSize = New Size(1180, 720)
         Me.BackColor = CLR_BG_PREMIUM
         Me.Text = "KUMO | Historial premium"
+        Me.DoubleBuffered = True
+    End Sub
 
-        gbFiltro.BackColor = CLR_PANEL_PREMIUM
-        gbFiltro.ForeColor = CLR_TEXT_PREMIUM
-        gbFiltro.Text = "Filtro de ventas"
+    Private Sub AplicarEstilo()
+        ModEstilo.EstilarControles(Me)
+        ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.EstilarBotonPrimario(btnBuscar)
+        ModEstilo.EstilarBotonSecundario(btnHoy)
+        ModEstilo.EstilarBotonSecundario(btnTicket)
+        ModEstilo.EstilarBotonSecundario(btnImprimir)
+        ModEstilo.EstilarBotonPeligro(btnRegresar)
 
-        gbTabla.BackColor = CLR_SURFACE_PREMIUM
-        gbTabla.ForeColor = CLR_TEXT_PREMIUM
-        gbTabla.Text = "Ventas del dia"
+        Me.BackColor = CLR_BG_PREMIUM
+
+        EstilarGroupBox(gbFiltro, "Filtro de ventas")
+        EstilarGroupBox(gbTabla, "Historial de ventas")
 
         lblFechaTxt.Text = "Fecha"
         lblFechaTxt.ForeColor = CLR_MUTED_PREMIUM
         lblFechaTxt.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
 
-        For Each pnl As Panel In New Panel() {pnlIngresos, pnlVentas, pnlPromedio, pnlArticulos}
-            pnl.BackColor = CLR_SURFACE_PREMIUM
-        Next
+        EstilarPanelResumen(pnlIngresos, lblIngresosTitle, lblIngresosVal, lblIngresosSub, CLR_GREEN_PREMIUM)
+        EstilarPanelResumen(pnlVentas, lblVentasTitle, lblVentasVal, lblVentasSub, CLR_DARK_PREMIUM)
+        EstilarPanelResumen(pnlPromedio, lblPromedioTitle, lblPromedioVal, lblPromedioSub, CLR_DARK_PREMIUM)
+        EstilarPanelResumen(pnlArticulos, lblArticulosTitle, lblArticulosVal, lblArticulosSub, CLR_DARK_PREMIUM)
 
-        btnBuscar.Text = "Ver ventas"
+        lblIngresosTitle.Text = "INGRESOS DEL DIA"
+        lblIngresosSub.Text = "ventas cobradas"
+        lblVentasTitle.Text = "VENTAS REGISTRADAS"
+        lblVentasSub.Text = "tickets emitidos"
+        lblPromedioTitle.Text = "TICKET PROMEDIO"
+        lblPromedioSub.Text = "importe medio"
+        lblArticulosTitle.Text = "ARTICULOS VENDIDOS"
+        lblArticulosSub.Text = "piezas desplazadas"
+
+        btnBuscar.Text = "Ver corte"
         btnHoy.Text = "Hoy"
         btnTicket.Text = "Abrir ticket"
-        btnImprimir.Text = "Exportar vista"
+        btnImprimir.Text = "Exportar"
         btnRegresar.Text = "Cerrar"
 
         btnBuscar.BackColor = CLR_DARK_PREMIUM
         btnBuscar.ForeColor = Color.White
+        btnBuscar.FlatAppearance.BorderColor = CLR_DARK_PREMIUM
         btnBuscar.FlatAppearance.MouseOverBackColor = Color.FromArgb(67, 74, 84)
 
         btnHoy.BackColor = CLR_PANEL_PREMIUM
         btnHoy.ForeColor = CLR_TEXT_PREMIUM
-        btnHoy.FlatAppearance.BorderColor = Color.FromArgb(214, 189, 150)
+        btnHoy.FlatAppearance.BorderColor = CLR_GOLD_PREMIUM
         btnHoy.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 235, 224)
 
         btnTicket.BackColor = CLR_SURFACE_PREMIUM
         btnTicket.ForeColor = CLR_TEXT_PREMIUM
-        btnTicket.FlatAppearance.BorderColor = Color.FromArgb(214, 189, 150)
+        btnTicket.FlatAppearance.BorderColor = CLR_GOLD_PREMIUM
         btnTicket.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 235, 224)
 
         btnImprimir.BackColor = CLR_SURFACE_PREMIUM
         btnImprimir.ForeColor = CLR_TEXT_PREMIUM
-        btnImprimir.FlatAppearance.BorderColor = Color.FromArgb(214, 189, 150)
+        btnImprimir.FlatAppearance.BorderColor = CLR_GOLD_PREMIUM
         btnImprimir.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 235, 224)
 
         btnRegresar.BackColor = CLR_DARK_PREMIUM
         btnRegresar.ForeColor = Color.FromArgb(244, 226, 193)
         btnRegresar.FlatAppearance.MouseOverBackColor = Color.FromArgb(57, 64, 73)
 
+        EstilarFecha()
+        EstilarTabla()
+        EstilarBarraEstado()
+        ConfigurarLayoutHistorial()
+    End Sub
+
+    Private Sub EstilarGroupBox(gb As GroupBox, titulo As String)
+        gb.Text = titulo
+        gb.BackColor = CLR_SURFACE_PREMIUM
+        gb.ForeColor = CLR_TEXT_PREMIUM
+        gb.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+        gb.Padding = New Padding(8)
+    End Sub
+
+    Private Sub EstilarPanelResumen(panel As Panel, titulo As Label, valor As Label, subtitulo As Label, colorValor As Color)
+        panel.BackColor = CLR_PANEL_PREMIUM
+        panel.BorderStyle = BorderStyle.None
+
+        titulo.ForeColor = CLR_MUTED_PREMIUM
+        titulo.Font = New Font("Segoe UI", 8.0F, FontStyle.Bold)
+
+        valor.ForeColor = colorValor
+        valor.Font = New Font("Segoe UI", 16.0F, FontStyle.Bold)
+
+        subtitulo.ForeColor = CLR_MUTED_PREMIUM
+        subtitulo.Font = New Font("Segoe UI", 8.0F, FontStyle.Regular)
+    End Sub
+
+    Private Sub EstilarFecha()
+        dtpFecha.Font = New Font("Segoe UI", 9.5F)
+        dtpFecha.CalendarForeColor = CLR_TEXT_PREMIUM
+        dtpFecha.CalendarMonthBackground = CLR_SURFACE_PREMIUM
+        dtpFecha.CalendarTitleBackColor = CLR_DARK_PREMIUM
+        dtpFecha.CalendarTitleForeColor = Color.White
+    End Sub
+
+    Private Sub EstilarTabla()
         dgvVentas.BackgroundColor = CLR_SURFACE_PREMIUM
         dgvVentas.BorderStyle = BorderStyle.None
         dgvVentas.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
         dgvVentas.GridColor = Color.FromArgb(229, 217, 201)
+        dgvVentas.RowHeadersVisible = False
         dgvVentas.EnableHeadersVisualStyles = False
         dgvVentas.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None
+        dgvVentas.ColumnHeadersHeight = 34
         dgvVentas.ColumnHeadersDefaultCellStyle.BackColor = CLR_DARK_PREMIUM
         dgvVentas.ColumnHeadersDefaultCellStyle.ForeColor = Color.White
         dgvVentas.ColumnHeadersDefaultCellStyle.SelectionBackColor = CLR_DARK_PREMIUM
@@ -109,8 +155,17 @@ Public Class Form4
         dgvVentas.DefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 236, 223)
         dgvVentas.DefaultCellStyle.SelectionForeColor = CLR_TEXT_PREMIUM
         dgvVentas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(252, 248, 242)
+        dgvVentas.AlternatingRowsDefaultCellStyle.ForeColor = CLR_TEXT_PREMIUM
         dgvVentas.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 236, 223)
+        dgvVentas.AlternatingRowsDefaultCellStyle.SelectionForeColor = CLR_TEXT_PREMIUM
         dgvVentas.RowTemplate.Height = 32
+    End Sub
+
+    Private Sub EstilarBarraEstado()
+        StatusStrip1.BackColor = CLR_DARK_PREMIUM
+        StatusStrip1.SizingGrip = False
+        sbInfo.ForeColor = Color.FromArgb(244, 226, 193)
+        sbInfo.Font = New Font("Segoe UI", 8.0F)
     End Sub
 
     Private Sub ConfigurarLayoutHistorial()
@@ -119,28 +174,34 @@ Public Class Form4
         Dim altoBoton As Integer = 40
         Dim anchoFiltro As Integer = 560
         Dim esp As Integer = 14
+        Dim altoResumen As Integer = 110
         Dim anchoPanel As Integer = CInt((Me.ClientSize.Width - (margen * 2) - (esp * 3)) / 4)
-        Dim yResumen As Integer = top + altoBoton + 18
-        Dim yTabla As Integer = yResumen + 96 + 18
+        Dim yResumen As Integer = top + altoBoton + 16
+        Dim yTabla As Integer = yResumen + altoResumen + 18
         Dim altoTabla As Integer = Me.ClientSize.Height - yTabla - StatusStrip1.Height - margen
 
-        gbFiltro.SetBounds(margen, top, anchoFiltro, 66)
-        btnRegresar.SetBounds(Me.ClientSize.Width - margen - 118, top, 118, altoBoton)
+        gbFiltro.SetBounds(margen, top, anchoFiltro, 74)
+        btnRegresar.SetBounds(Me.ClientSize.Width - margen - 118, top + 4, 118, altoBoton)
 
-        lblFechaTxt.Location = New Point(18, 28)
-        dtpFecha.SetBounds(80, 24, 170, 30)
-        btnBuscar.SetBounds(266, 22, 110, 34)
-        btnHoy.SetBounds(388, 22, 86, 34)
+        lblFechaTxt.Location = New Point(18, 30)
+        dtpFecha.SetBounds(80, 25, 176, 30)
+        btnBuscar.SetBounds(270, 23, 112, 34)
+        btnHoy.SetBounds(394, 23, 88, 34)
 
-        pnlIngresos.SetBounds(margen, yResumen, anchoPanel, 96)
-        pnlVentas.SetBounds(pnlIngresos.Right + esp, yResumen, anchoPanel, 96)
-        pnlPromedio.SetBounds(pnlVentas.Right + esp, yResumen, anchoPanel, 96)
-        pnlArticulos.SetBounds(pnlPromedio.Right + esp, yResumen, Me.ClientSize.Width - margen - pnlPromedio.Right - esp, 96)
+        pnlIngresos.SetBounds(margen, yResumen, anchoPanel, altoResumen)
+        pnlVentas.SetBounds(pnlIngresos.Right + esp, yResumen, anchoPanel, altoResumen)
+        pnlPromedio.SetBounds(pnlVentas.Right + esp, yResumen, anchoPanel, altoResumen)
+        pnlArticulos.SetBounds(pnlPromedio.Right + esp, yResumen, Me.ClientSize.Width - margen - pnlPromedio.Right - esp, altoResumen)
 
         gbTabla.SetBounds(margen, yTabla, Me.ClientSize.Width - (margen * 2), altoTabla)
-        dgvVentas.SetBounds(14, 30, gbTabla.Width - 28, gbTabla.Height - 92)
+        dgvVentas.SetBounds(14, 30, gbTabla.Width - 28, gbTabla.Height - 94)
         btnTicket.SetBounds(14, gbTabla.Height - 48, 150, 34)
-        btnImprimir.SetBounds(btnTicket.Right + 12, gbTabla.Height - 48, 172, 34)
+        btnImprimir.SetBounds(btnTicket.Right + 12, gbTabla.Height - 48, 150, 34)
+
+        PosicionarContenidoPanelResumen(pnlIngresos, lblIngresosTitle, lblIngresosVal, lblIngresosSub)
+        PosicionarContenidoPanelResumen(pnlVentas, lblVentasTitle, lblVentasVal, lblVentasSub)
+        PosicionarContenidoPanelResumen(pnlPromedio, lblPromedioTitle, lblPromedioVal, lblPromedioSub)
+        PosicionarContenidoPanelResumen(pnlArticulos, lblArticulosTitle, lblArticulosVal, lblArticulosSub)
 
         gbFiltro.Anchor = AnchorStyles.Top Or AnchorStyles.Left
         btnRegresar.Anchor = AnchorStyles.Top Or AnchorStyles.Right
@@ -152,6 +213,17 @@ Public Class Form4
         dgvVentas.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         btnTicket.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         btnImprimir.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
+    End Sub
+
+    Private Sub PosicionarContenidoPanelResumen(panel As Panel, titulo As Label, valor As Label, subtitulo As Label)
+        Dim pad As Integer = 16
+        titulo.AutoSize = False
+        valor.AutoSize = False
+        subtitulo.AutoSize = False
+
+        titulo.SetBounds(pad, 14, panel.Width - (pad * 2), 20)
+        valor.SetBounds(pad, 34, panel.Width - (pad * 2), 34)
+        subtitulo.SetBounds(pad, panel.Height - 28, panel.Width - (pad * 2), 18)
     End Sub
 
     Private Sub btnBuscar_Click(sender As Object, e As EventArgs) Handles btnBuscar.Click

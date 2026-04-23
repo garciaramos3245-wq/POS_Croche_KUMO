@@ -12,6 +12,21 @@ Public Class Form5
 
     Public Sub New()
         InitializeComponent()
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                If cbEstado.Items.Count > 0 Then
+                    cbEstado.SelectedIndex = 0
+                End If
+                ModEstilo.EstilarControles(Me)
+                ModEstilo.EstilarStatusStrip(StatusStrip1)
+                ModEstilo.EstilarBotonPrimario(btnGuardar)
+                ModEstilo.EstilarBotonPeligro(btnEliminar)
+                ModEstilo.EstilarBotonSecundario(btnNuevo)
+                ModEstilo.EstilarBotonSecundario(btnCargar)
+                ModEstilo.EstilarBotonPeligro(btnRegresar)
+                AplicarEstiloPedidosPremium()
+                ConfigurarLayoutPedidos()
+            End Sub)
     End Sub
 
     Private idSeleccionado As Integer = 0

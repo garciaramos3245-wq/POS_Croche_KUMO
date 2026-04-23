@@ -8,6 +8,15 @@ Public Class Form1
 
     Public Sub New()
         InitializeComponent()
+        ModEstilo.AplicarTemaConsistente(Me,
+            Sub()
+                CrearPanelInformativo()
+                AplicarEstilo()
+                Me.ClientSize = New Size(920, 560)
+                Me.MinimumSize = New Size(920, 560)
+                Me.MaximumSize = New Size(920, 560)
+                ConfigurarLayoutAcceso()
+            End Sub)
     End Sub
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load

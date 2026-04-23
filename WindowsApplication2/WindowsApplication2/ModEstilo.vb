@@ -1,6 +1,7 @@
 Imports System.Drawing
 Imports System.IO
 Imports System.Runtime.InteropServices
+Imports System.ComponentModel
 Imports System.Windows.Forms
 
 Module ModEstilo
@@ -25,6 +26,40 @@ Module ModEstilo
         Dim sufijo As String = If(valor.Hour < 12, "a.m.", "p.m.")
         Return valor.ToString("dd/MM/yyyy") & "  " & valor.ToString("h:mm") & " " & sufijo
     End Function
+
+    Public Function EstaEnModoDisenio(ctrl As Control) As Boolean
+        If LicenseManager.UsageMode = LicenseUsageMode.Designtime Then
+            Return True
+        End If
+
+        Dim actual As Control = ctrl
+        While actual IsNot Nothing
+            If actual.Site IsNot Nothing AndAlso actual.Site.DesignMode Then
+                Return True
+            End If
+            actual = actual.Parent
+        End While
+
+        Return False
+    End Function
+
+    Public Sub AplicarTemaConsistente(frm As Form, accion As Action)
+        If frm Is Nothing OrElse accion Is Nothing Then Return
+
+        Try
+            frm.SuspendLayout()
+            accion()
+        Catch
+            If Not EstaEnModoDisenio(frm) Then Throw
+            ' Evita que el diseñador falle si algun control o recurso aun no esta listo.
+        Finally
+            frm.ResumeLayout(True)
+        End Try
+    End Sub
+
+    Public Sub AplicarVistaPreviaDisenio(frm As Form, accion As Action)
+        AplicarTemaConsistente(frm, accion)
+    End Sub
 
     Private Const WM_NCLBUTTONDOWN As Integer = &HA1
     Private Const HTCAPTION As Integer = 2
@@ -95,6 +130,7 @@ Module ModEstilo
         frm.Font = New Font("Segoe UI", 9.0F)
         AplicarIcono(frm)
 
+        RemoveHandler frm.Paint, AddressOf PintarFondoKumo
         AddHandler frm.Paint, AddressOf PintarFondoKumo
 
         For Each ctrl As Control In ObtenerTodos(frm)
