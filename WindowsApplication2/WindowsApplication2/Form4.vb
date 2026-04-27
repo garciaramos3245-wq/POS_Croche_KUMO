@@ -2,6 +2,8 @@ Imports System.Data.SqlClient
 
 Public Class Form4
 
+    Private _cargandoVentas As Boolean
+
     Private ReadOnly CLR_BG_PREMIUM As Color = Color.FromArgb(244, 240, 234)
     Private ReadOnly CLR_SURFACE_PREMIUM As Color = Color.FromArgb(255, 252, 247)
     Private ReadOnly CLR_PANEL_PREMIUM As Color = Color.FromArgb(247, 241, 232)
@@ -29,7 +31,11 @@ Public Class Form4
         PrepararFormularioHistorial()
         AplicarEstilo()
         dtpFecha.Value = Today
-        CargarVentas()
+        BeginInvoke(New MethodInvoker(AddressOf IniciarCargaVentas))
+    End Sub
+
+    Private Async Sub IniciarCargaVentas()
+        Await CargarVentasAsync()
     End Sub
 
     Private Sub PrepararFormularioHistorial()
@@ -120,7 +126,8 @@ Public Class Form4
         panel.BorderStyle = BorderStyle.None
 
         titulo.ForeColor = CLR_MUTED_PREMIUM
-        titulo.Font = New Font("Segoe UI", 8.0F, FontStyle.Bold)
+        titulo.Font = New Font("Segoe UI", 8.75F, FontStyle.Bold)
+        titulo.AutoEllipsis = True
 
         valor.ForeColor = colorValor
         valor.Font = New Font("Segoe UI", 16.0F, FontStyle.Bold)
@@ -170,14 +177,14 @@ Public Class Form4
 
     Private Sub ConfigurarLayoutHistorial()
         Dim margen As Integer = 18
-        Dim top As Integer = 14
+        Dim top As Integer = 24
         Dim altoBoton As Integer = 40
         Dim anchoFiltro As Integer = 560
-        Dim esp As Integer = 14
-        Dim altoResumen As Integer = 110
+        Dim esp As Integer = 18
+        Dim altoResumen As Integer = 128
         Dim anchoPanel As Integer = CInt((Me.ClientSize.Width - (margen * 2) - (esp * 3)) / 4)
-        Dim yResumen As Integer = top + altoBoton + 16
-        Dim yTabla As Integer = yResumen + altoResumen + 18
+        Dim yResumen As Integer = gbFiltro.Bottom + 20
+        Dim yTabla As Integer = yResumen + altoResumen + 22
         Dim altoTabla As Integer = Me.ClientSize.Height - yTabla - StatusStrip1.Height - margen
 
         gbFiltro.SetBounds(margen, top, anchoFiltro, 74)
@@ -221,33 +228,51 @@ Public Class Form4
         valor.AutoSize = False
         subtitulo.AutoSize = False
 
-        titulo.SetBounds(pad, 14, panel.Width - (pad * 2), 20)
-        valor.SetBounds(pad, 34, panel.Width - (pad * 2), 34)
-        subtitulo.SetBounds(pad, panel.Height - 28, panel.Width - (pad * 2), 18)
+        titulo.SetBounds(pad, 14, panel.Width - (pad * 2), 26)
+        valor.SetBounds(pad, 46, panel.Width - (pad * 2), 36)
+        subtitulo.SetBounds(pad, panel.Height - 34, panel.Width - (pad * 2), 22)
     End Sub
 
-    Private Sub btnBuscar_Click(sender As Object, e As EventArgs) Handles btnBuscar.Click
-        CargarVentas()
+    Private Async Sub btnBuscar_Click(sender As Object, e As EventArgs) Handles btnBuscar.Click
+        Await CargarVentasAsync()
     End Sub
 
-    Private Sub btnHoy_Click(sender As Object, e As EventArgs) Handles btnHoy.Click
+    Private Async Sub btnHoy_Click(sender As Object, e As EventArgs) Handles btnHoy.Click
         dtpFecha.Value = Today
-        CargarVentas()
+        Await CargarVentasAsync()
     End Sub
 
-    Private Sub CargarVentas()
+    Private Async Function CargarVentasAsync() As Task
+        If _cargandoVentas Then Return
+        _cargandoVentas = True
+        CambiarEstadoCarga(True)
+
         Dim fecha As Date = dtpFecha.Value.Date
         Try
-            dgvVentas.DataSource = ObtenerTabla(
-                "SELECT Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-                "CONVERT(varchar, Fecha, 103) AS [Fecha], Total " &
-                "FROM PEDIDOS WHERE CAST(Fecha AS DATE) = @fecha ORDER BY Fecha DESC",
-                New SqlParameter("@fecha", fecha))
+            Dim ventas = Await Task.Run(Function()
+                                            Return ObtenerTabla(
+                                                "SELECT Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
+                                                "CONVERT(varchar, Fecha, 103) AS [Fecha], Total " &
+                                                "FROM PEDIDOS WHERE CAST(Fecha AS DATE) = @fecha ORDER BY Fecha DESC",
+                                                New SqlParameter("@fecha", fecha))
+                                        End Function)
 
-            Dim resumen = ObtenerTabla(
-                "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
-                "FROM PEDIDOS WHERE CAST(Fecha AS DATE) = @fecha",
-                New SqlParameter("@fecha", fecha))
+            Dim resumen = Await Task.Run(Function()
+                                             Return ObtenerTabla(
+                                                 "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
+                                                 "FROM PEDIDOS WHERE CAST(Fecha AS DATE) = @fecha",
+                                                 New SqlParameter("@fecha", fecha))
+                                         End Function)
+
+            Dim articulos = Await Task.Run(Function()
+                                               Return ObtenerEscalar(
+                                                   "SELECT ISNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
+                                                   "INNER JOIN PEDIDOS p ON p.Id_Pedido = d.Id_Pedido " &
+                                                   "WHERE CAST(p.Fecha AS DATE) = @fecha",
+                                                   New SqlParameter("@fecha", fecha))
+                                           End Function)
+
+            dgvVentas.DataSource = ventas
 
             If resumen.Rows.Count > 0 Then
                 lblVentasVal.Text = resumen.Rows(0)("VentasDia").ToString()
@@ -255,18 +280,24 @@ Public Class Form4
                 lblPromedioVal.Text = "$" & CDec(resumen.Rows(0)("Promedio")).ToString("N2")
             End If
 
-            lblArticulosVal.Text = ObtenerEscalar(
-                "SELECT ISNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
-                "INNER JOIN PEDIDOS p ON p.Id_Pedido = d.Id_Pedido " &
-                "WHERE CAST(p.Fecha AS DATE) = @fecha",
-                New SqlParameter("@fecha", fecha)).ToString()
+            lblArticulosVal.Text = articulos.ToString()
 
         Catch ex As Exception
             MsgBox("Error al cargar ventas: " & ex.Message)
+        Finally
+            sbInfo.Text = "  Ventas: " & lblVentasVal.Text & "  |  Ingresos: " & lblIngresosVal.Text & "  |  " & dtpFecha.Value.ToString("dd/MM/yyyy")
+            gbTabla.Text = "Ventas del dia - " & dtpFecha.Value.ToString("dd/MM/yyyy")
+            CambiarEstadoCarga(False)
+            _cargandoVentas = False
         End Try
+    End Function
 
-        sbInfo.Text = "  Ventas: " & lblVentasVal.Text & "  |  Ingresos: " & lblIngresosVal.Text & "  |  " & dtpFecha.Value.ToString("dd/MM/yyyy")
-        gbTabla.Text = "Ventas del dia - " & dtpFecha.Value.ToString("dd/MM/yyyy")
+    Private Sub CambiarEstadoCarga(cargando As Boolean)
+        btnBuscar.Enabled = Not cargando
+        btnHoy.Enabled = Not cargando
+        btnTicket.Enabled = Not cargando
+        UseWaitCursor = cargando
+        sbInfo.Text = If(cargando, "  Cargando historial...", sbInfo.Text)
     End Sub
 
     Private Sub btnTicket_Click(sender As Object, e As EventArgs) Handles btnTicket.Click
@@ -290,7 +321,7 @@ Public Class Form4
 
     Private Sub RefrescarVentas()
         If Me.IsDisposed Then Return
-        CargarVentas()
+        BeginInvoke(New MethodInvoker(AddressOf IniciarCargaVentas))
     End Sub
 
     Private Sub Form4_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing

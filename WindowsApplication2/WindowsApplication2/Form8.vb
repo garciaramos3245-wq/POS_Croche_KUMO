@@ -128,9 +128,9 @@ Public Class Form8
 
     Private Sub ConfigurarLayoutCancelaciones()
         Dim margen As Integer = 18
-        Dim top As Integer = 14
+        Dim top As Integer = 24
         Dim altoBoton As Integer = 40
-        Dim esp As Integer = 14
+        Dim esp As Integer = 18
         Dim altoFiltro As Integer = 66
         Dim altoCancelar As Integer = 92
         Dim panelIzquierdo As Integer = CInt(Me.ClientSize.Width * 0.52)
