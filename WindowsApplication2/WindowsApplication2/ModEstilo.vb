@@ -21,6 +21,12 @@ Module ModEstilo
     Public ReadOnly CLR_RED_HOT As Color = Color.FromArgb(224, 108, 108)
     Public ReadOnly CLR_GREEN As Color = Color.FromArgb(74, 151, 107)
     Public ReadOnly CLR_GREEN_SOFT As Color = Color.FromArgb(236, 249, 241)
+    Private _logoCache As Image
+    Private _iconoCache As Icon
+    Private _rutaLogo As String = ""
+    Private _rutaIcono As String = ""
+    Private _rutaLogoEvaluada As Boolean = False
+    Private _rutaIconoEvaluada As Boolean = False
 
     Public Function FormatoFechaHora24(valor As DateTime) As String
         Dim sufijo As String = If(valor.Hour < 12, "a.m.", "p.m.")
@@ -29,6 +35,12 @@ Module ModEstilo
 
     Public Function EstaEnModoDisenio(ctrl As Control) As Boolean
         If LicenseManager.UsageMode = LicenseUsageMode.Designtime Then
+            Return True
+        End If
+
+        Dim proceso = System.Diagnostics.Process.GetCurrentProcess().ProcessName
+        If String.Equals(proceso, "devenv", StringComparison.OrdinalIgnoreCase) OrElse
+           String.Equals(proceso, "DesignToolsServer", StringComparison.OrdinalIgnoreCase) Then
             Return True
         End If
 
@@ -45,7 +57,6 @@ Module ModEstilo
 
     Public Sub AplicarTemaConsistente(frm As Form, accion As Action)
         If frm Is Nothing OrElse accion Is Nothing Then Return
-
         Try
             frm.SuspendLayout()
             accion()
@@ -296,7 +307,6 @@ Module ModEstilo
 
     Public Sub CargarLogo(pb As PictureBox)
         If pb Is Nothing Then Return
-
         Dim logoPath = ObtenerRutaLogo()
         pb.BackColor = Color.Transparent
         pb.SizeMode = PictureBoxSizeMode.Zoom
@@ -306,11 +316,23 @@ Module ModEstilo
             Return
         End If
 
-        Using fs As New FileStream(logoPath, FileMode.Open, FileAccess.Read)
-            Using img = Image.FromStream(fs)
-                pb.Image = New Bitmap(img)
-            End Using
-        End Using
+        Try
+            If _logoCache Is Nothing Then
+                Using fs As New FileStream(logoPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+                    Using img = Image.FromStream(fs)
+                        _logoCache = New Bitmap(img)
+                    End Using
+                End Using
+            End If
+
+            Dim anterior = pb.Image
+            pb.Image = CType(_logoCache.Clone(), Image)
+            If anterior IsNot Nothing Then
+                anterior.Dispose()
+            End If
+        Catch
+            pb.Image = Nothing
+        End Try
     End Sub
 
     Private Sub EstilarGroupBox(gb As GroupBox)
@@ -495,11 +517,19 @@ Module ModEstilo
         Dim ruta = ObtenerRutaIcono()
         If ruta = "" Then Return
 
-        Using fs As New FileStream(ruta, FileMode.Open, FileAccess.Read)
-            Using ico As New Icon(fs)
-                frm.Icon = CType(ico.Clone(), Icon)
+        If _iconoCache Is Nothing Then
+            Using fs As New FileStream(ruta, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)
+                Using ico As New Icon(fs)
+                    _iconoCache = CType(ico.Clone(), Icon)
+                End Using
             End Using
-        End Using
+        End If
+
+        Dim anterior = frm.Icon
+        frm.Icon = CType(_iconoCache.Clone(), Icon)
+        If anterior IsNot Nothing Then
+            anterior.Dispose()
+        End If
     End Sub
 
     Private Function ObtenerColorPanel(nombre As String) As Color
@@ -556,6 +586,8 @@ Module ModEstilo
     End Function
 
     Private Function ObtenerRutaLogo() As String
+        If _rutaLogoEvaluada Then Return _rutaLogo
+
         Dim candidatos = {
             Path.Combine(Application.StartupPath, "Assets", "Logo.jpeg"),
             Path.Combine(Application.StartupPath, "..", "..", "Assets", "Logo.jpeg"),
@@ -565,14 +597,20 @@ Module ModEstilo
         For Each ruta In candidatos
             Dim absoluta = System.IO.Path.GetFullPath(ruta)
             If File.Exists(absoluta) Then
+                _rutaLogoEvaluada = True
+                _rutaLogo = absoluta
                 Return absoluta
             End If
         Next
 
+        _rutaLogoEvaluada = True
+        _rutaLogo = ""
         Return ""
     End Function
 
     Private Function ObtenerRutaIcono() As String
+        If _rutaIconoEvaluada Then Return _rutaIcono
+
         Dim candidatos = {
             Path.Combine(Application.StartupPath, "Assets", "Logo.ico"),
             Path.Combine(Application.StartupPath, "..", "..", "Assets", "Logo.ico"),
@@ -582,10 +620,14 @@ Module ModEstilo
         For Each ruta In candidatos
             Dim absoluta = System.IO.Path.GetFullPath(ruta)
             If File.Exists(absoluta) Then
+                _rutaIconoEvaluada = True
+                _rutaIcono = absoluta
                 Return absoluta
             End If
         Next
 
+        _rutaIconoEvaluada = True
+        _rutaIcono = ""
         Return ""
     End Function
 

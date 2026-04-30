@@ -10,23 +10,25 @@ Public Class Form1
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
-                CrearPanelInformativo()
-                AplicarEstilo()
-                Me.ClientSize = New Size(920, 560)
-                Me.MinimumSize = New Size(920, 560)
-                Me.MaximumSize = New Size(920, 560)
-                ConfigurarLayoutAcceso()
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me, 28, False)
+                End If
+                AplicarDisenoAcceso()
             End Sub)
     End Sub
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me, 28, False)
+        AplicarDisenoAcceso()
+        CentrarVentanaLogin()
+    End Sub
+
+    Private Sub AplicarDisenoAcceso()
         CrearPanelInformativo()
         AplicarEstilo()
         Me.ClientSize = New Size(920, 560)
         Me.MinimumSize = New Size(920, 560)
         Me.MaximumSize = New Size(920, 560)
-        CentrarVentanaLogin()
         ConfigurarLayoutAcceso()
     End Sub
 

@@ -4,6 +4,7 @@
     Protected Overrides Sub Dispose(disposing As Boolean)
         If disposing AndAlso (components IsNot Nothing) Then components.Dispose()
         MyBase.Dispose(disposing)
+
     End Sub
     Private Sub InitializeComponent()
         Me.btnGuardar = New System.Windows.Forms.Button()
@@ -493,6 +494,234 @@
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
+        ' Runtime premium design snapshot. Keep this block aligned with the executable view.
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
+        Me.ClientSize = New System.Drawing.Size(1536, 864)
+        Me.BackColor = System.Drawing.Color.FromArgb(244, 240, 234)
+        Me.Text = "KUMO | Pedidos premium"
+        Me.btnCargar.SetBounds(14, 706, 479, 34)
+        Me.btnCargar.BackColor = System.Drawing.Color.FromArgb(46, 52, 60)
+        Me.btnCargar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)
+        Me.btnCargar.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.btnCargar.Text = "Cargar seleccionado"
+        Me.btnCargar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnCargar.FlatAppearance.BorderSize = 1
+        Me.btnCargar.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(46, 52, 60)
+        Me.btnCargar.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(67, 74, 84)
+        Me.btnCargar.UseVisualStyleBackColor = False
+        Me.btnEliminar.SetBounds(280, 14, 128, 42)
+        Me.btnEliminar.BackColor = System.Drawing.Color.FromArgb(154, 73, 64)
+        Me.btnEliminar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)
+        Me.btnEliminar.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.btnEliminar.Text = "Eliminar"
+        Me.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnEliminar.FlatAppearance.BorderSize = 0
+        Me.btnEliminar.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(214, 226, 241)
+        Me.btnEliminar.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(133, 61, 53)
+        Me.btnEliminar.UseVisualStyleBackColor = False
+        Me.btnGuardar.SetBounds(18, 14, 128, 42)
+        Me.btnGuardar.BackColor = System.Drawing.Color.FromArgb(74, 133, 95)
+        Me.btnGuardar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)
+        Me.btnGuardar.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.btnGuardar.Text = "Guardar pedido"
+        Me.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnGuardar.FlatAppearance.BorderSize = 0
+        Me.btnGuardar.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(214, 226, 241)
+        Me.btnGuardar.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(58, 111, 78)
+        Me.btnGuardar.UseVisualStyleBackColor = False
+        Me.btnNuevo.SetBounds(158, 14, 110, 42)
+        Me.btnNuevo.BackColor = System.Drawing.Color.FromArgb(247, 241, 232)
+        Me.btnNuevo.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.btnNuevo.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.btnNuevo.Text = "+ Nuevo"
+        Me.btnNuevo.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnNuevo.FlatAppearance.BorderSize = 1
+        Me.btnNuevo.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(214, 189, 150)
+        Me.btnNuevo.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(243, 235, 224)
+        Me.btnNuevo.UseVisualStyleBackColor = False
+        Me.btnRegresar.SetBounds(1396, 14, 122, 42)
+        Me.btnRegresar.BackColor = System.Drawing.Color.FromArgb(46, 52, 60)
+        Me.btnRegresar.ForeColor = System.Drawing.Color.FromArgb(244, 226, 193)
+        Me.btnRegresar.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.btnRegresar.Text = "Cerrar"
+        Me.btnRegresar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnRegresar.FlatAppearance.BorderSize = 0
+        Me.btnRegresar.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(214, 226, 241)
+        Me.btnRegresar.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(57, 64, 73)
+        Me.btnRegresar.UseVisualStyleBackColor = False
+        Me.cbEstado.SetBounds(496, 428, 460, 25)
+        Me.cbEstado.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.cbEstado.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.cbEstado.Font = New System.Drawing.Font("Segoe UI", 9.5!, System.Drawing.FontStyle.Regular)
+        Me.cbEstado.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.dgv.SetBounds(14, 32, 479, 658)
+        Me.dgv.BackColor = System.Drawing.Color.FromArgb(247, 241, 232)
+        Me.dgv.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.dgv.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.dgv.BackgroundColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.dgv.BorderStyle = System.Windows.Forms.BorderStyle.None
+        Me.dgv.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal
+        Me.dgv.EnableHeadersVisualStyles = False
+        Me.dgv.RowHeadersVisible = False
+        Me.dgv.ColumnHeadersHeight = 30
+        Me.dgv.RowTemplate.Height = 32
+        Me.dgv.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(46, 52, 60)
+        Me.dgv.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)
+        Me.dgv.DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.dgv.DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.dtpEntrega.SetBounds(18, 428, 460, 23)
+        Me.dtpEntrega.BackColor = System.Drawing.Color.FromArgb(255, 255, 255)
+        Me.dtpEntrega.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0)
+        Me.dtpEntrega.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.dtpEntrega.Format = System.Windows.Forms.DateTimePickerFormat.Short
+        Me.gbForm.SetBounds(18, 70, 975, 754)
+        Me.gbForm.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.gbForm.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.gbForm.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.gbForm.Text = "Pedido especial"
+        Me.gbLista.SetBounds(1011, 70, 507, 754)
+        Me.gbLista.BackColor = System.Drawing.Color.FromArgb(247, 241, 232)
+        Me.gbLista.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.gbLista.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.gbLista.Text = "Agenda de pedidos"
+        Me.lblAnticTxt.SetBounds(337, 326, 54, 21)
+        Me.lblAnticTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblAnticTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblAnticTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblAnticTxt.Text = "Anticipo"
+        Me.lblAnticTxt.AutoSize = True
+        Me.lblAnticTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblColTxt.SetBounds(18, 182, 40, 21)
+        Me.lblColTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblColTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblColTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblColTxt.Text = "Paleta"
+        Me.lblColTxt.AutoSize = True
+        Me.lblColTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblDescTxt.SetBounds(18, 110, 72, 21)
+        Me.lblDescTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblDescTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblDescTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblDescTxt.Text = "Descripcion"
+        Me.lblDescTxt.AutoSize = True
+        Me.lblDescTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblEstadoTxt.SetBounds(496, 404, 43, 21)
+        Me.lblEstadoTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblEstadoTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblEstadoTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblEstadoTxt.Text = "Estado"
+        Me.lblEstadoTxt.AutoSize = True
+        Me.lblEstadoTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblFechaTxt.SetBounds(18, 404, 49, 21)
+        Me.lblFechaTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblFechaTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblFechaTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblFechaTxt.Text = "Entrega"
+        Me.lblFechaTxt.AutoSize = True
+        Me.lblFechaTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblMedTxt.SetBounds(496, 182, 54, 21)
+        Me.lblMedTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblMedTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblMedTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblMedTxt.Text = "Medidas"
+        Me.lblMedTxt.AutoSize = True
+        Me.lblMedTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblNombreTxt.SetBounds(18, 38, 45, 21)
+        Me.lblNombreTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblNombreTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblNombreTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblNombreTxt.Text = "Cliente"
+        Me.lblNombreTxt.AutoSize = True
+        Me.lblNombreTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblNotasTxt.SetBounds(18, 254, 39, 21)
+        Me.lblNotasTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblNotasTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblNotasTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblNotasTxt.Text = "Notas"
+        Me.lblNotasTxt.AutoSize = True
+        Me.lblNotasTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblPrecioTxt.SetBounds(18, 326, 70, 21)
+        Me.lblPrecioTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblPrecioTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblPrecioTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblPrecioTxt.Text = "Precio final"
+        Me.lblPrecioTxt.AutoSize = True
+        Me.lblPrecioTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblSaldoTxt.SetBounds(656, 326, 37, 21)
+        Me.lblSaldoTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblSaldoTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblSaldoTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblSaldoTxt.Text = "Saldo"
+        Me.lblSaldoTxt.AutoSize = True
+        Me.lblSaldoTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblTelTxt.SetBounds(496, 38, 56, 21)
+        Me.lblTelTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblTelTxt.ForeColor = System.Drawing.Color.FromArgb(136, 118, 94)
+        Me.lblTelTxt.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblTelTxt.Text = "Telefono"
+        Me.lblTelTxt.AutoSize = True
+        Me.lblTelTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.StatusStrip1.SetBounds(0, 842, 1536, 22)
+        Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(113, 152, 209)
+        Me.StatusStrip1.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.StatusStrip1.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(113, 152, 209)
+        Me.txtAnticipo.SetBounds(337, 350, 301, 25)
+        Me.txtAnticipo.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtAnticipo.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtAnticipo.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtAnticipo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtAnticipo.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtColores.SetBounds(18, 206, 460, 25)
+        Me.txtColores.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtColores.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtColores.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtColores.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtColores.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtDesc.SetBounds(18, 134, 939, 25)
+        Me.txtDesc.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtDesc.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtDesc.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtDesc.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtDesc.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtMedidas.SetBounds(496, 206, 460, 25)
+        Me.txtMedidas.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtMedidas.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtMedidas.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtMedidas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtMedidas.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtNombre.SetBounds(18, 62, 460, 25)
+        Me.txtNombre.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtNombre.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtNombre.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtNombre.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtNombre.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtNotas.SetBounds(18, 278, 939, 25)
+        Me.txtNotas.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtNotas.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtNotas.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtNotas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtNotas.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtPrecio.SetBounds(18, 350, 301, 25)
+        Me.txtPrecio.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtPrecio.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtPrecio.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtPrecio.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtPrecio.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtSaldo.SetBounds(656, 350, 301, 25)
+        Me.txtSaldo.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtSaldo.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtSaldo.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtSaldo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtSaldo.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtTel.SetBounds(496, 62, 460, 25)
+        Me.txtTel.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
+        Me.txtTel.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
+        Me.txtTel.Font = New System.Drawing.Font("Segoe UI", 10!, System.Drawing.FontStyle.Regular)
+        Me.txtTel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtTel.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+
     End Sub
     Friend WithEvents btnGuardar As System.Windows.Forms.Button
     Friend WithEvents btnNuevo As System.Windows.Forms.Button
@@ -527,4 +756,7 @@
     Friend WithEvents sbInfo As System.Windows.Forms.ToolStripStatusLabel
     Friend WithEvents btnRegresar As Button
 End Class
+
+
+
 

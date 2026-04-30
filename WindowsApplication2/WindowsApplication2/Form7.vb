@@ -16,15 +16,11 @@ Public Class Form7
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me)
+                End If
                 dtpFecha.Value = Today
-                ModEstilo.EstilarControles(Me)
-                ModEstilo.EstilarStatusStrip(StatusStrip1)
-                ModEstilo.EstilarBotonPrimario(btnVer)
-                ModEstilo.EstilarBotonSecundario(btnHoy)
-                ModEstilo.EstilarBotonSecundario(btnImprimir)
-                ModEstilo.EstilarBotonPeligro(btnRegresar)
-                AplicarEstiloReportePremium()
-                ConfigurarLayoutReporte()
+                AplicarDisenoReporte()
             End Sub)
     End Sub
 
@@ -44,18 +40,22 @@ Public Class Form7
         AddHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarReporte
         Try
             dtpFecha.Value = Today
-            ModEstilo.EstilarControles(Me)
-            ModEstilo.EstilarStatusStrip(StatusStrip1)
-            ModEstilo.EstilarBotonPrimario(btnVer)
-            ModEstilo.EstilarBotonSecundario(btnHoy)
-            ModEstilo.EstilarBotonSecundario(btnImprimir)
-            ModEstilo.EstilarBotonPeligro(btnRegresar)
-            AplicarEstiloReportePremium()
-            ConfigurarLayoutReporte()
+            AplicarDisenoReporte()
             BeginInvoke(New MethodInvoker(AddressOf IniciarCargaReporte))
         Catch ex As Exception
             MsgBox("Error en Form7_Load: " & ex.Message & vbNewLine & ex.StackTrace)
         End Try
+    End Sub
+
+    Private Sub AplicarDisenoReporte()
+        ModEstilo.EstilarControles(Me)
+        ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.EstilarBotonPrimario(btnVer)
+        ModEstilo.EstilarBotonSecundario(btnHoy)
+        ModEstilo.EstilarBotonSecundario(btnImprimir)
+        ModEstilo.EstilarBotonPeligro(btnRegresar)
+        AplicarEstiloReportePremium()
+        ConfigurarLayoutReporte()
     End Sub
 
     Private Async Sub IniciarCargaReporte()

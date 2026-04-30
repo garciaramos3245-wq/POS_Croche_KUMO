@@ -15,15 +15,11 @@ Public Class Form8
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me)
+                End If
                 dtpFecha.Value = Today
-                ModEstilo.EstilarControles(Me)
-                ModEstilo.EstilarStatusStrip(StatusStrip1)
-                ModEstilo.EstilarBotonPrimario(btnBuscar)
-                ModEstilo.EstilarBotonSecundario(btnHoy)
-                ModEstilo.EstilarBotonPeligro(btnCancelar)
-                ModEstilo.EstilarBotonPeligro(btnRegresar)
-                AplicarEstiloCancelacionesPremium()
-                ConfigurarLayoutCancelaciones()
+                AplicarDisenoCancelaciones()
             End Sub)
     End Sub
 
@@ -44,17 +40,21 @@ Public Class Form8
         Try
             dtpFecha.Value = Today
             CargarVentas()
-            ModEstilo.EstilarControles(Me)
-            ModEstilo.EstilarStatusStrip(StatusStrip1)
-            ModEstilo.EstilarBotonPrimario(btnBuscar)
-            ModEstilo.EstilarBotonSecundario(btnHoy)
-            ModEstilo.EstilarBotonPeligro(btnCancelar)
-            ModEstilo.EstilarBotonPeligro(btnRegresar)
-            AplicarEstiloCancelacionesPremium()
-            ConfigurarLayoutCancelaciones()
+            AplicarDisenoCancelaciones()
         Catch ex As Exception
             MsgBox("Error al cargar el formulario: " & ex.Message)
         End Try
+    End Sub
+
+    Private Sub AplicarDisenoCancelaciones()
+        ModEstilo.EstilarControles(Me)
+        ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.EstilarBotonPrimario(btnBuscar)
+        ModEstilo.EstilarBotonSecundario(btnHoy)
+        ModEstilo.EstilarBotonPeligro(btnCancelar)
+        ModEstilo.EstilarBotonPeligro(btnRegresar)
+        AplicarEstiloCancelacionesPremium()
+        ConfigurarLayoutCancelaciones()
     End Sub
 
     Private Sub AplicarEstiloCancelacionesPremium()

@@ -31,6 +31,7 @@ C:\Users\garci\OneDrive\Imágenes\Escritorio\Croché_Punto_Venta\WindowsApplicat
 C:\Users\garci\OneDrive\Imágenes\Escritorio\Croché_Punto_Venta\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.xml
 C:\Users\garci\OneDrive\Imágenes\Escritorio\Croché_Punto_Venta\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.pdb
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Debug\Assets\Logo.ico
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Debug\Assets\ExeIcon.ico
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Debug\Assets\Logo.jpeg
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Debug\WindowsApplication2.exe.config
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Debug\WindowsApplication2.exe

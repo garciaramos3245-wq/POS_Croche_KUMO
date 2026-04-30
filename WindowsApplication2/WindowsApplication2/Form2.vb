@@ -31,24 +31,16 @@ Public Class Form2
     Private lblCarritoResumenItems As Label
     Private pnlTotales As Panel
     Private _inicioCorrecto As Boolean
+    Private _cargandoDatosPOS As Boolean
 
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
-                InicializarComponentesPOS()
-                ModEstilo.EstilarControles(Me)
-                ModEstilo.CargarLogo(picMarca)
-                ModEstilo.CargarLogo(picTopLogo)
-                ModEstilo.EstilarBotonPrimario(btnAgregar)
-                ModEstilo.EstilarBotonCobrar(btnCobrar)
-                ModEstilo.EstilarBotonSecundario(btnLimpiar)
-                ModEstilo.EstilarBotonSecundario(btnQuitar)
-                ModEstilo.EstilarBotonSecundario(btnSalida)
-                ModEstilo.EstilarMenuStrip(MenuStrip1)
-                ModEstilo.EstilarStatusStrip(StatusStrip1)
-                AplicarEstiloPOS()
-                ConfigurarPantallaPOS()
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me)
+                End If
+                AplicarDisenoPOS()
             End Sub)
     End Sub
 
@@ -78,32 +70,101 @@ Public Class Form2
             InicializarComponentesPOS()
 
             InicializarCarrito()
-            CargarCategorias()
-            CargarProductos()
-            ActualizarNumVenta()
+            PrepararVistaInicialPOS()
             sbFecha.Text = ModEstilo.FormatoFechaHora24(Now)
 
-            ModEstilo.EstilarControles(Me)
-            ModEstilo.CargarLogo(picMarca)
-            ModEstilo.CargarLogo(picTopLogo)
-
-            ModEstilo.EstilarBotonPrimario(btnAgregar)
-            ModEstilo.EstilarBotonCobrar(btnCobrar)
-            ModEstilo.EstilarBotonSecundario(btnLimpiar)
-            ModEstilo.EstilarBotonSecundario(btnQuitar)
-            ModEstilo.EstilarBotonSecundario(btnSalida)
-            ModEstilo.EstilarMenuStrip(MenuStrip1)
-            ModEstilo.EstilarStatusStrip(StatusStrip1)
-
-            AplicarEstiloPOS()
-            ConfigurarPantallaPOS()
+            AplicarDisenoPOS()
             RecalcularTotales()
             _inicioCorrecto = True
+            BeginInvoke(New MethodInvoker(AddressOf IniciarCargaInicialPOS))
         Catch ex As Exception
             _inicioCorrecto = False
             CargarModoSeguroPOS(ex)
         End Try
     End Sub
+
+    Private Sub AplicarDisenoPOS()
+        InicializarComponentesPOS()
+        ModEstilo.EstilarControles(Me)
+        ModEstilo.CargarLogo(picMarca)
+        ModEstilo.CargarLogo(picTopLogo)
+        ModEstilo.EstilarBotonPrimario(btnAgregar)
+        ModEstilo.EstilarBotonCobrar(btnCobrar)
+        ModEstilo.EstilarBotonSecundario(btnLimpiar)
+        ModEstilo.EstilarBotonSecundario(btnQuitar)
+        ModEstilo.EstilarBotonSecundario(btnSalida)
+        ModEstilo.EstilarMenuStrip(MenuStrip1)
+        ModEstilo.EstilarStatusStrip(StatusStrip1)
+        AplicarEstiloPOS()
+        ConfigurarPantallaPOS()
+    End Sub
+
+    Private Sub PrepararVistaInicialPOS()
+        If dgvCarrito.DataSource Is Nothing Then
+            dgvCarrito.DataSource = dtCarrito
+        End If
+
+        If dgvProductos.DataSource Is Nothing Then
+            dtProductos = CrearTablaProductosVacia()
+            dgvProductos.DataSource = dtProductos
+        End If
+
+        ConfigurarColumnasCarrito()
+        ConfigurarColumnasProductos()
+
+        cbCategoria.Items.Clear()
+        cbCategoria.Items.Add("(Todas)")
+        cbCategoria.SelectedIndex = 0
+        lblNumVenta.Text = "Ticket #V-..."
+        sbInfo.Text = "   Mostrando caja. Cargando catalogo..."
+    End Sub
+
+    Private Async Sub IniciarCargaInicialPOS()
+        Await CargarDatosInicialesPOSAsync()
+    End Sub
+
+    Private Async Function CargarDatosInicialesPOSAsync() As Task
+        If _cargandoDatosPOS OrElse Me.IsDisposed Then Return
+
+        _cargandoDatosPOS = True
+        btnAgregar.Enabled = False
+        btnCobrar.Enabled = False
+        btnQuitar.Enabled = False
+
+        Try
+            sbInfo.Text = "   Cargando catalogo y folio..."
+
+            Dim sqlCategorias = "SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat"
+            Dim sqlProductos = ObtenerSqlProductos()
+            Dim sqlNumVenta = "SELECT ISNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"
+
+            Dim categoriasTask = Task.Run(Function() ObtenerTabla(sqlCategorias))
+            Dim productosTask = Task.Run(Function() ObtenerTabla(sqlProductos))
+            Dim numVentaTask = Task.Run(Function() ObtenerEscalar(sqlNumVenta))
+
+            Await Task.WhenAll(categoriasTask, productosTask, numVentaTask)
+
+            If Me.IsDisposed Then Return
+
+            AplicarCategorias(categoriasTask.Result)
+            AplicarProductos(productosTask.Result)
+            AplicarNumeroVenta(numVentaTask.Result)
+            RecalcularTotales()
+            sbInfo.Text = "   Catalogo listo para vender."
+        Catch ex As Exception
+            If Me.IsDisposed Then Return
+            lblNumVenta.Text = "Ticket #V-001"
+            sbInfo.Text = "   La caja abrio, pero no se pudo cargar el catalogo."
+            MsgBox("Error al cargar catalogo inicial: " & ex.Message)
+        Finally
+            If Not Me.IsDisposed Then
+                btnAgregar.Enabled = True
+                btnCobrar.Enabled = True
+                btnQuitar.Enabled = True
+            End If
+            _cargandoDatosPOS = False
+        End Try
+    End Function
 
     Private Sub InicializarComponentesPOS()
         If pnlTopBar IsNot Nothing Then Return
@@ -589,14 +650,32 @@ Public Class Form2
 
     Private Sub CargarCategorias()
         Dim tabla = ObtenerTabla("SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat")
-        cbCategoria.Items.Clear()
-        cbCategoria.Items.Add("(Todas)")
+        AplicarCategorias(tabla)
+    End Sub
 
-        For Each row As DataRow In tabla.Rows
-            cbCategoria.Items.Add(row("NombreCat").ToString())
-        Next
+    Private Sub AplicarCategorias(tabla As DataTable)
+        Dim seleccionAnterior As String = cbCategoria.Text
 
-        cbCategoria.SelectedIndex = 0
+        cbCategoria.BeginUpdate()
+        Try
+            cbCategoria.Items.Clear()
+            cbCategoria.Items.Add("(Todas)")
+
+            If tabla IsNot Nothing Then
+                For Each row As DataRow In tabla.Rows
+                    cbCategoria.Items.Add(row("NombreCat").ToString())
+                Next
+            End If
+        Finally
+            cbCategoria.EndUpdate()
+        End Try
+
+        If seleccionAnterior <> "" AndAlso cbCategoria.Items.Contains(seleccionAnterior) Then
+            cbCategoria.SelectedItem = seleccionAnterior
+        Else
+            cbCategoria.SelectedIndex = 0
+        End If
+
         ActualizarIndicadoresPOS()
     End Sub
 
@@ -605,43 +684,76 @@ Public Class Form2
             dgvCarrito.DataSource = dtCarrito
         End If
 
-        If dgvCarrito.Columns.Contains("ID_Producto") Then dgvCarrito.Columns("ID_Producto").Visible = False
-        If dgvCarrito.Columns.Contains("Precio") Then dgvCarrito.Columns("Precio").Visible = False
-        If dgvCarrito.Columns.Contains("Nombre") Then dgvCarrito.Columns("Nombre").HeaderText = "Producto"
-        If dgvCarrito.Columns.Contains("Cantidad") Then dgvCarrito.Columns("Cantidad").HeaderText = "Qty"
-        If dgvCarrito.Columns.Contains("SubTotal") Then dgvCarrito.Columns("SubTotal").HeaderText = "Subtotal"
+        ConfigurarColumnasCarrito()
 
         Try
-            dtProductos = ObtenerTabla(
-                "SELECT p.Id_Producto AS ID_Producto, p.NombrePr AS Nombre, p.Precio, " &
-                "ISNULL(i.cant_disp, 0) AS Stock, c.NombreCat AS Categoria " &
-                "FROM PRODUCTO p " &
-                "LEFT JOIN INVENTARIO i ON i.Id_Producto = p.Id_Producto " &
-                "LEFT JOIN " & TablaCategorias() & " c ON c.Id_Categoria = p.Id_Categoria " &
-                "ORDER BY c.NombreCat, p.NombrePr")
-
-            dgvProductos.DataSource = dtProductos
-
-            If dgvProductos.Columns.Contains("ID_Producto") Then dgvProductos.Columns("ID_Producto").Visible = False
-            If dgvProductos.Columns.Contains("Nombre") Then dgvProductos.Columns("Nombre").HeaderText = "Nombre"
-            If dgvProductos.Columns.Contains("Precio") Then dgvProductos.Columns("Precio").HeaderText = "Precio"
-            If dgvProductos.Columns.Contains("Stock") Then dgvProductos.Columns("Stock").HeaderText = "Stock"
-            If dgvProductos.Columns.Contains("Categoria") Then dgvProductos.Columns("Categoria").HeaderText = "Categoria"
-
-            ActualizarIndicadoresPOS()
+            AplicarProductos(ObtenerTabla(ObtenerSqlProductos()))
         Catch ex As Exception
             MsgBox("Error al cargar productos: " & ex.Message)
         End Try
     End Sub
 
+    Private Function ObtenerSqlProductos() As String
+        Return "SELECT p.Id_Producto AS ID_Producto, p.NombrePr AS Nombre, p.Precio, " &
+               "ISNULL(i.cant_disp, 0) AS Stock, c.NombreCat AS Categoria " &
+               "FROM PRODUCTO p " &
+               "LEFT JOIN INVENTARIO i ON i.Id_Producto = p.Id_Producto " &
+               "LEFT JOIN " & TablaCategorias() & " c ON c.Id_Categoria = p.Id_Categoria " &
+               "ORDER BY c.NombreCat, p.NombrePr"
+    End Function
+
+    Private Function CrearTablaProductosVacia() As DataTable
+        Dim tabla As New DataTable()
+        tabla.Columns.Add("ID_Producto", GetType(Integer))
+        tabla.Columns.Add("Nombre", GetType(String))
+        tabla.Columns.Add("Precio", GetType(Decimal))
+        tabla.Columns.Add("Stock", GetType(Integer))
+        tabla.Columns.Add("Categoria", GetType(String))
+        Return tabla
+    End Function
+
+    Private Sub ConfigurarColumnasCarrito()
+        If dgvCarrito.Columns.Contains("ID_Producto") Then dgvCarrito.Columns("ID_Producto").Visible = False
+        If dgvCarrito.Columns.Contains("Precio") Then dgvCarrito.Columns("Precio").Visible = False
+        If dgvCarrito.Columns.Contains("Nombre") Then dgvCarrito.Columns("Nombre").HeaderText = "Producto"
+        If dgvCarrito.Columns.Contains("Cantidad") Then dgvCarrito.Columns("Cantidad").HeaderText = "Qty"
+        If dgvCarrito.Columns.Contains("SubTotal") Then dgvCarrito.Columns("SubTotal").HeaderText = "Subtotal"
+    End Sub
+
+    Private Sub ConfigurarColumnasProductos()
+        If dgvProductos.Columns.Contains("ID_Producto") Then dgvProductos.Columns("ID_Producto").Visible = False
+        If dgvProductos.Columns.Contains("Nombre") Then dgvProductos.Columns("Nombre").HeaderText = "Nombre"
+        If dgvProductos.Columns.Contains("Precio") Then dgvProductos.Columns("Precio").HeaderText = "Precio"
+        If dgvProductos.Columns.Contains("Stock") Then dgvProductos.Columns("Stock").HeaderText = "Stock"
+        If dgvProductos.Columns.Contains("Categoria") Then dgvProductos.Columns("Categoria").HeaderText = "Categoria"
+    End Sub
+
+    Private Sub AplicarProductos(tabla As DataTable)
+        dtProductos = If(tabla, CrearTablaProductosVacia())
+        dgvProductos.DataSource = dtProductos
+        ConfigurarColumnasProductos()
+        ActualizarIndicadoresPOS()
+    End Sub
+
     Private Sub ActualizarNumVenta()
         Try
-            Dim num As Integer = CInt(ObtenerEscalar("SELECT ISNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"))
-            lblNumVenta.Text = "Ticket #V-" & num.ToString("000")
+            AplicarNumeroVenta(ObtenerEscalar("SELECT ISNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"))
         Catch ex As Exception
             lblNumVenta.Text = "Ticket #V-001"
         End Try
 
+        ActualizarIndicadoresPOS()
+    End Sub
+
+    Private Sub AplicarNumeroVenta(valor As Object)
+        Dim num As Integer = 1
+
+        If valor IsNot Nothing AndAlso Not IsDBNull(valor) Then
+            Integer.TryParse(valor.ToString(), num)
+        End If
+
+        If num <= 0 Then num = 1
+        lblNumVenta.Text = "Ticket #V-" & num.ToString("000")
         ActualizarIndicadoresPOS()
     End Sub
 

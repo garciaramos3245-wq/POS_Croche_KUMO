@@ -28,41 +28,21 @@ Public Class Form6
         idVenta = id
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
-                ModEstilo.EstilarControles(Me)
-                ModEstilo.EstilarBotonPrimario(btnImprimir)
-                ModEstilo.EstilarBotonSecundario(btnCerrar)
-
-                Me.BackColor = CLR_BG_PREMIUM
-                pnlHeader.BackColor = CLR_PANEL_PREMIUM
-                InsertarLogoHeader()
-                lblTitulo.ForeColor = CLR_DARK_PREMIUM
-                lblTitulo.Text = "KUMO | Ticket premium"
-                pnlLinea.BackColor = Color.FromArgb(214, 189, 150)
-                gbPreview.BackColor = CLR_SURFACE_PREMIUM
-                gbPreview.ForeColor = CLR_TEXT_PREMIUM
-                gbPreview.Text = "Vista previa del ticket"
-                pnlMeta.BackColor = Color.FromArgb(250, 246, 240)
-                rtb.BackColor = CLR_SURFACE_PREMIUM
-                rtb.ForeColor = CLR_TEXT_PREMIUM
-                rtb.BorderStyle = BorderStyle.None
-                rtb.Font = New Font("Consolas", 9.25F)
-                btnImprimir.Text = "Vista de impresion"
-                btnCerrar.Text = "Cerrar ticket"
-                btnImprimir.BackColor = CLR_DARK_PREMIUM
-                btnImprimir.ForeColor = Color.White
-                btnImprimir.FlatAppearance.MouseOverBackColor = Color.FromArgb(67, 74, 84)
-                btnCerrar.BackColor = CLR_PANEL_PREMIUM
-                btnCerrar.ForeColor = CLR_TEXT_PREMIUM
-                btnCerrar.FlatAppearance.BorderColor = Color.FromArgb(214, 189, 150)
-                btnCerrar.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 235, 224)
-                Me.Text = "Ticket de Venta - V-000"
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me)
+                End If
+                AplicarDisenoTicket("Ticket de Venta - V-000")
                 rtb.Text = "Vista previa del ticket KUMO"
-                ConfigurarLayoutTicket()
             End Sub)
     End Sub
 
     Private Sub Form6_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
+        AplicarDisenoTicket("Ticket de Venta - V-" & idVenta.ToString("000"))
+        GenerarTicket()
+    End Sub
+
+    Private Sub AplicarDisenoTicket(tituloVentana As String)
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarBotonPrimario(btnImprimir)
         ModEstilo.EstilarBotonSecundario(btnCerrar)
@@ -90,9 +70,7 @@ Public Class Form6
         btnCerrar.ForeColor = CLR_TEXT_PREMIUM
         btnCerrar.FlatAppearance.BorderColor = Color.FromArgb(214, 189, 150)
         btnCerrar.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 235, 224)
-
-        Me.Text = "Ticket de Venta - V-" & idVenta.ToString("000")
-        GenerarTicket()
+        Me.Text = tituloVentana
         ConfigurarLayoutTicket()
     End Sub
 

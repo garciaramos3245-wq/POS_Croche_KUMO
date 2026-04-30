@@ -8,6 +8,7 @@
             components.Dispose()
         End If
         MyBase.Dispose(disposing)
+
     End Sub
 
     Private Sub InitializeComponent()
@@ -222,6 +223,103 @@
         Me.StatusStrip1.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
+        ' Runtime premium design snapshot. Keep this block aligned with the executable view.
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
+        Me.ClientSize = New System.Drawing.Size(920, 560)
+        Me.BackColor = System.Drawing.Color.FromArgb(245, 247, 250)
+        Me.Text = "KUMO | Acceso de caja"
+        Me.btnCancelar.SetBounds(466, 435, 244, 48)
+        Me.btnCancelar.BackColor = System.Drawing.Color.FromArgb(232, 239, 248)
+        Me.btnCancelar.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.btnCancelar.Font = New System.Drawing.Font("Segoe UI", 9.5!, System.Drawing.FontStyle.Bold)
+        Me.btnCancelar.Text = "Cerrar"
+        Me.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnCancelar.FlatAppearance.BorderSize = 1
+        Me.btnCancelar.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(155, 188, 232)
+        Me.btnCancelar.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(220, 233, 248)
+        Me.btnCancelar.UseVisualStyleBackColor = False
+        Me.btnEntrar.SetBounds(210, 435, 244, 48)
+        Me.btnEntrar.BackColor = System.Drawing.Color.FromArgb(113, 152, 209)
+        Me.btnEntrar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)
+        Me.btnEntrar.Font = New System.Drawing.Font("Segoe UI", 10.5!, System.Drawing.FontStyle.Bold)
+        Me.btnEntrar.Text = "Ingresar al sistema"
+        Me.btnEntrar.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnEntrar.FlatAppearance.BorderSize = 0
+        Me.btnEntrar.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(214, 226, 241)
+        Me.btnEntrar.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(86, 125, 183)
+        Me.btnEntrar.UseVisualStyleBackColor = False
+        Me.gbCredenciales.SetBounds(210, 213, 500, 204)
+        Me.gbCredenciales.BackColor = System.Drawing.Color.FromArgb(255, 255, 255)
+        Me.gbCredenciales.ForeColor = System.Drawing.Color.FromArgb(113, 152, 209)
+        Me.gbCredenciales.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.gbCredenciales.Text = "Acceso"
+        Me.lblAppName.SetBounds(166, 36, 99, 44)
+        Me.lblAppName.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblAppName.ForeColor = System.Drawing.Color.FromArgb(37, 67, 109)
+        Me.lblAppName.Font = New System.Drawing.Font("Segoe UI", 21!, System.Drawing.FontStyle.Bold)
+        Me.lblAppName.Text = "KUMO"
+        Me.lblAppName.AutoSize = True
+        Me.lblAppName.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblAppSub.SetBounds(168, 74, 0, 22)
+        Me.lblAppSub.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblAppSub.ForeColor = System.Drawing.Color.FromArgb(111, 132, 162)
+        Me.lblAppSub.Font = New System.Drawing.Font("Segoe UI", 10.5!, System.Drawing.FontStyle.Regular)
+        Me.lblAppSub.Text = ""
+        Me.lblAppSub.AutoSize = True
+        Me.lblAppSub.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblLogo.SetBounds(30, 24, 11, 20)
+        Me.lblLogo.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblLogo.ForeColor = System.Drawing.Color.FromArgb(116, 141, 175)
+        Me.lblLogo.Font = New System.Drawing.Font("Segoe UI", 8.5!, System.Drawing.FontStyle.Regular)
+        Me.lblLogo.Text = "K"
+        Me.lblLogo.AutoSize = True
+        Me.lblLogo.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblPassword.SetBounds(30, 112, 87, 21)
+        Me.lblPassword.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblPassword.ForeColor = System.Drawing.Color.FromArgb(116, 141, 175)
+        Me.lblPassword.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblPassword.Text = "CONTRASEÑA"
+        Me.lblPassword.AutoSize = True
+        Me.lblPassword.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.lblUsuario.SetBounds(30, 38, 59, 21)
+        Me.lblUsuario.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.lblUsuario.ForeColor = System.Drawing.Color.FromArgb(116, 141, 175)
+        Me.lblUsuario.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Bold)
+        Me.lblUsuario.Text = "USUARIO"
+        Me.lblUsuario.AutoSize = True
+        Me.lblUsuario.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.picLogo.SetBounds(24, 18, 124, 92)
+        Me.picLogo.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
+        Me.picLogo.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.picLogo.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.picLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.pnlLinea.SetBounds(210, 190, 500, 5)
+        Me.pnlLinea.BackColor = System.Drawing.Color.FromArgb(155, 188, 232)
+        Me.pnlLinea.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.pnlLinea.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.pnlLogo.SetBounds(210, 44, 500, 132)
+        Me.pnlLogo.BackColor = System.Drawing.Color.FromArgb(236, 243, 252)
+        Me.pnlLogo.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.pnlLogo.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.StatusStrip1.SetBounds(0, 538, 920, 22)
+        Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(113, 152, 209)
+        Me.StatusStrip1.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.StatusStrip1.Font = New System.Drawing.Font("Segoe UI", 9!, System.Drawing.FontStyle.Regular)
+        Me.StatusStrip1.BackColor = System.Drawing.Color.FromArgb(113, 152, 209)
+        Me.txtPassword.SetBounds(30, 141, 440, 27)
+        Me.txtPassword.BackColor = System.Drawing.Color.FromArgb(249, 251, 255)
+        Me.txtPassword.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.txtPassword.Font = New System.Drawing.Font("Segoe UI", 11!, System.Drawing.FontStyle.Regular)
+        Me.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtPassword.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+        Me.txtUsuario.SetBounds(30, 67, 440, 27)
+        Me.txtUsuario.BackColor = System.Drawing.Color.FromArgb(249, 251, 255)
+        Me.txtUsuario.ForeColor = System.Drawing.Color.FromArgb(52, 79, 118)
+        Me.txtUsuario.Font = New System.Drawing.Font("Segoe UI", 11!, System.Drawing.FontStyle.Regular)
+        Me.txtUsuario.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.txtUsuario.TextAlign = System.Windows.Forms.HorizontalAlignment.Left
+
     End Sub
 
     Friend WithEvents pnlLogo As System.Windows.Forms.Panel
@@ -241,5 +339,8 @@
     Friend WithEvents sbInfo As System.Windows.Forms.ToolStripStatusLabel
     Friend WithEvents sbVersion As System.Windows.Forms.ToolStripStatusLabel
 End Class
+
+
+
 
 

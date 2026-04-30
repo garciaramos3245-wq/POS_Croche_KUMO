@@ -14,18 +14,13 @@ Public Class Form5
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me)
+                End If
                 If cbEstado.Items.Count > 0 Then
                     cbEstado.SelectedIndex = 0
                 End If
-                ModEstilo.EstilarControles(Me)
-                ModEstilo.EstilarStatusStrip(StatusStrip1)
-                ModEstilo.EstilarBotonPrimario(btnGuardar)
-                ModEstilo.EstilarBotonPeligro(btnEliminar)
-                ModEstilo.EstilarBotonSecundario(btnNuevo)
-                ModEstilo.EstilarBotonSecundario(btnCargar)
-                ModEstilo.EstilarBotonPeligro(btnRegresar)
-                AplicarEstiloPedidosPremium()
-                ConfigurarLayoutPedidos()
+                AplicarDisenoPedidos()
             End Sub)
     End Sub
 
@@ -47,6 +42,10 @@ Public Class Form5
         AddHandler ModActualizaciones.PedidosActualizados, AddressOf RefrescarPedidos
         cbEstado.SelectedIndex = 0
         CargarPedidos()
+        AplicarDisenoPedidos()
+    End Sub
+
+    Private Sub AplicarDisenoPedidos()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
         ModEstilo.EstilarBotonPrimario(btnGuardar)

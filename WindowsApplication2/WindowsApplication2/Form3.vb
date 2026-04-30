@@ -15,6 +15,9 @@ Public Class Form3
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me)
+                End If
                 AplicarTemaInventario()
             End Sub)
     End Sub

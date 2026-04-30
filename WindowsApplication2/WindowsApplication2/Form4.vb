@@ -18,20 +18,25 @@ Public Class Form4
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
             Sub()
-                PrepararFormularioHistorial()
-                AplicarEstilo()
+                If ModEstilo.EstaEnModoDisenio(Me) Then
+                    ModEstilo.PrepararVentana(Me)
+                End If
+                AplicarDisenoHistorial()
                 dtpFecha.Value = Today
-                ConfigurarLayoutHistorial()
             End Sub)
     End Sub
 
     Private Sub Form4_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         AddHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
         ModEstilo.PrepararVentana(Me)
-        PrepararFormularioHistorial()
-        AplicarEstilo()
+        AplicarDisenoHistorial()
         dtpFecha.Value = Today
         BeginInvoke(New MethodInvoker(AddressOf IniciarCargaVentas))
+    End Sub
+
+    Private Sub AplicarDisenoHistorial()
+        PrepararFormularioHistorial()
+        AplicarEstilo()
     End Sub
 
     Private Async Sub IniciarCargaVentas()
