@@ -36,7 +36,7 @@
         Dim clrPale As System.Drawing.Color = System.Drawing.Color.White
 
         Me.pnlHeader.BackColor = clrH : Me.pnlHeader.Controls.Add(Me.lblTitulo) : Me.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top : Me.pnlHeader.Location = New System.Drawing.Point(0, 0) : Me.pnlHeader.Name = "pnlHeader" : Me.pnlHeader.Size = New System.Drawing.Size(370, 50)
-        Me.lblTitulo.AutoSize = True : Me.lblTitulo.Font = New System.Drawing.Font("Segoe UI", 11.0F, System.Drawing.FontStyle.Bold) : Me.lblTitulo.ForeColor = clrA : Me.lblTitulo.Location = New System.Drawing.Point(14, 14) : Me.lblTitulo.Name = "lblTitulo" : Me.lblTitulo.Text = "KUMO | Ticket premium" : Me.lblTitulo.BackColor = System.Drawing.Color.Transparent
+        Me.lblTitulo.AutoSize = True : Me.lblTitulo.Font = New System.Drawing.Font("Segoe UI", 11.0F, System.Drawing.FontStyle.Bold) : Me.lblTitulo.ForeColor = clrA : Me.lblTitulo.Location = New System.Drawing.Point(14, 14) : Me.lblTitulo.Name = "lblTitulo" : Me.lblTitulo.Text = "KUMO | Ticket" : Me.lblTitulo.BackColor = System.Drawing.Color.Transparent
 
         Me.pnlLinea.BackColor = clrA : Me.pnlLinea.Dock = System.Windows.Forms.DockStyle.Top : Me.pnlLinea.Location = New System.Drawing.Point(0, 50) : Me.pnlLinea.Name = "pnlLinea" : Me.pnlLinea.Size = New System.Drawing.Size(370, 4)
 
@@ -141,7 +141,7 @@
         Me.lblTitulo.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
         Me.lblTitulo.ForeColor = System.Drawing.Color.FromArgb(46, 52, 60)
         Me.lblTitulo.Font = New System.Drawing.Font("Segoe UI", 8.5!, System.Drawing.FontStyle.Regular)
-        Me.lblTitulo.Text = "KUMO | Ticket premium"
+        Me.lblTitulo.Text = "KUMO | Ticket"
         Me.lblTitulo.AutoSize = True
         Me.lblTitulo.TextAlign = System.Drawing.ContentAlignment.TopLeft
         Me.pnlHeader.SetBounds(0, 0, 1536, 50)

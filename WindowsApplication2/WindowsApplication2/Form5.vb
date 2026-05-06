@@ -59,7 +59,7 @@ Public Class Form5
 
     Private Sub AplicarEstiloPedidosPremium()
         Me.BackColor = CLR_BG_PREMIUM
-        Me.Text = "KUMO | Pedidos premium"
+        Me.Text = "KUMO | Pedidos"
 
         gbForm.BackColor = CLR_SURFACE_PREMIUM
         gbForm.ForeColor = CLR_TEXT_PREMIUM
@@ -240,7 +240,7 @@ Public Class Form5
             If dgv.Columns.Contains("ID_Pedido") Then dgv.Columns("ID_Pedido").Visible = False
             sbInfo.Text = "  " & dt.Rows.Count & " pedidos registrados"
         Catch ex As Exception
-            MsgBox("Error al cargar pedidos: " & ex.Message)
+            ModMensajes.Mostrar(Me, "Pedidos no disponibles", "No se pudieron cargar los pedidos." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -288,7 +288,7 @@ Public Class Form5
             End If
 
         Catch ex As Exception
-            MsgBox("Error al cargar detalle: " & ex.Message)
+            ModMensajes.Mostrar(Me, "Detalle no disponible", "No se pudo cargar el detalle del pedido." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -318,7 +318,7 @@ Public Class Form5
 
     Private Sub btnGuardar_Click(sender As Object, e As EventArgs) Handles btnGuardar.Click
         If txtNombre.Text.Trim() = "" Then
-            MsgBox("Escribe el nombre del cliente.")
+            ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el nombre del cliente antes de guardar.", ModMensajes.TipoAviso.Advertencia)
             Return
         End If
 
@@ -361,12 +361,12 @@ Public Class Form5
                 End If
 
                 trans.Commit()
-                MsgBox(If(idSeleccionado = 0, "Pedido guardado correctamente.", "Pedido actualizado correctamente."))
+                ModMensajes.Mostrar(Me, "Pedido guardado", If(idSeleccionado = 0, "Pedido guardado correctamente.", "Pedido actualizado correctamente."), ModMensajes.TipoAviso.Exito)
                 ModActualizaciones.NotificarPedidosActualizados()
 
             Catch ex As Exception
                 trans.Rollback()
-                MsgBox("Error al guardar: " & ex.Message)
+                ModMensajes.Mostrar(Me, "No se pudo guardar", "No se guardo el pedido." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
             End Try
         End Using
 
@@ -376,11 +376,11 @@ Public Class Form5
 
     Private Sub btnEliminar_Click(sender As Object, e As EventArgs) Handles btnEliminar.Click
         If idSeleccionado = 0 Then
-            MsgBox("Selecciona un pedido de la lista.")
+            ModMensajes.Mostrar(Me, "Selecciona un pedido", "Elige un pedido de la lista antes de eliminarlo.", ModMensajes.TipoAviso.Advertencia)
             Return
         End If
 
-        If MsgBox("Eliminar pedido de " & txtNombre.Text & "?", MsgBoxStyle.YesNo, "Confirmar") <> MsgBoxResult.Yes Then Return
+        If Not ModMensajes.Confirmar(Me, "Eliminar pedido", "Deseas eliminar el pedido de " & txtNombre.Text & "?", "Eliminar", "Cancelar", ModMensajes.TipoAviso.Advertencia) Then Return
 
         Using cn = ObtenerConexion()
             cn.Open()
@@ -394,7 +394,7 @@ Public Class Form5
             End Using
         End Using
 
-        MsgBox("Pedido eliminado.")
+        ModMensajes.Mostrar(Me, "Pedido eliminado", "El pedido se elimino correctamente.", ModMensajes.TipoAviso.Exito)
         ModActualizaciones.NotificarPedidosActualizados()
         CargarPedidos()
         btnNuevo_Click(Nothing, Nothing)

@@ -268,7 +268,7 @@
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.Name = "Form8"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "KUMO | Cancelaciones premium"
+        Me.Text = "KUMO | Cancelaciones"
         Me.gbFiltro.ResumeLayout(False)
         Me.gbFiltro.PerformLayout()
         Me.gbVentas.ResumeLayout(False)
@@ -287,7 +287,7 @@
         Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
         Me.ClientSize = New System.Drawing.Size(1536, 864)
         Me.BackColor = System.Drawing.Color.FromArgb(244, 240, 234)
-        Me.Text = "KUMO | Cancelaciones premium"
+        Me.Text = "KUMO | Cancelaciones"
         Me.btnBuscar.SetBounds(266, 22, 110, 34)
         Me.btnBuscar.BackColor = System.Drawing.Color.FromArgb(46, 52, 60)
         Me.btnBuscar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)

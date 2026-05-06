@@ -427,7 +427,7 @@
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.Name = "Form4"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "KUMO | Historial premium"
+        Me.Text = "KUMO | Historial"
         Me.gbFiltro.ResumeLayout(False)
         Me.gbFiltro.PerformLayout()
         Me.pnlIngresos.ResumeLayout(False)
@@ -450,7 +450,7 @@
         Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
         Me.ClientSize = New System.Drawing.Size(1536, 864)
         Me.BackColor = System.Drawing.Color.FromArgb(244, 240, 234)
-        Me.Text = "KUMO | Historial premium"
+        Me.Text = "KUMO | Historial"
         Me.btnBuscar.SetBounds(270, 23, 112, 34)
         Me.btnBuscar.BackColor = System.Drawing.Color.FromArgb(46, 52, 60)
         Me.btnBuscar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)

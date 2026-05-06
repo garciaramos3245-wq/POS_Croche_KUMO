@@ -279,7 +279,7 @@
         Me.btnSalida.Name = "btnSalida"
         Me.btnSalida.Size = New System.Drawing.Size(80, 34)
         Me.btnSalida.TabIndex = 7
-        Me.btnSalida.Text = "Cerrar"
+        Me.btnSalida.Text = "Salir"
         Me.btnSalida.UseVisualStyleBackColor = False
         '
         'lblNumVenta
@@ -437,7 +437,7 @@
         Me.lblTotalTxt.Name = "lblTotalTxt"
         Me.lblTotalTxt.Size = New System.Drawing.Size(174, 25)
         Me.lblTotalTxt.TabIndex = 12
-        Me.lblTotalTxt.Text = "TOTAL DEL TICKET"
+        Me.lblTotalTxt.Text = "TOTAL A PAGAR"
         '
         'lblTotal
         '
@@ -526,7 +526,7 @@
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "Form2"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "KUMO | Caja premium"
+        Me.Text = "KUMO | Caja"
         Me.MenuStrip1.ResumeLayout(False)
         Me.MenuStrip1.PerformLayout()
         Me.gbProductos.ResumeLayout(False)
@@ -546,7 +546,7 @@
         Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
         Me.ClientSize = New System.Drawing.Size(1536, 864)
         Me.BackColor = System.Drawing.Color.FromArgb(244, 240, 234)
-        Me.Text = "KUMO | Caja premium"
+        Me.Text = "KUMO | Caja"
         Me.btnAgregar.SetBounds(768, 587, 220, 46)
         Me.btnAgregar.BackColor = System.Drawing.Color.FromArgb(49, 55, 63)
         Me.btnAgregar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)
@@ -601,7 +601,7 @@
         Me.btnSalida.BackColor = System.Drawing.Color.FromArgb(46, 52, 60)
         Me.btnSalida.ForeColor = System.Drawing.Color.FromArgb(244, 226, 193)
         Me.btnSalida.Font = New System.Drawing.Font("Segoe UI", 9.5!, System.Drawing.FontStyle.Bold)
-        Me.btnSalida.Text = "Cerrar"
+        Me.btnSalida.Text = "Salir"
         Me.btnSalida.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.btnSalida.FlatAppearance.BorderSize = 1
         Me.btnSalida.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(96, 87, 72)
@@ -733,7 +733,7 @@
         Me.lblTotalTxt.BackColor = System.Drawing.Color.FromArgb(0, 255, 255, 255)
         Me.lblTotalTxt.ForeColor = System.Drawing.Color.FromArgb(83, 69, 53)
         Me.lblTotalTxt.Font = New System.Drawing.Font("Segoe UI", 8.5!, System.Drawing.FontStyle.Regular)
-        Me.lblTotalTxt.Text = "TOTAL DEL TICKET"
+        Me.lblTotalTxt.Text = "TOTAL A PAGAR"
         Me.lblTotalTxt.AutoSize = True
         Me.lblTotalTxt.TextAlign = System.Drawing.ContentAlignment.TopLeft
         Me.MenuStrip1.SetBounds(18, 128, 553, 37)

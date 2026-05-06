@@ -70,7 +70,7 @@ Public Class Form3
 
     Private Sub AplicarEstiloInventarioPremium()
         Me.BackColor = CLR_BG_PREMIUM
-        Me.Text = "KUMO | Inventario premium"
+        Me.Text = "KUMO | Inventario"
 
         gbFiltro.BackColor = CLR_PANEL_PREMIUM
         gbFiltro.ForeColor = CLR_TEXT_PREMIUM
@@ -273,7 +273,7 @@ Public Class Form3
             lblInfo.Text = dtProductos.Rows.Count & " productos registrados"
             sbInfo.Text = "  " & lblInfo.Text
         Catch ex As Exception
-            MsgBox("Error al cargar productos: " & ex.Message)
+            ModMensajes.Mostrar(Me, "Inventario no disponible", "No se pudieron cargar los productos." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -313,9 +313,9 @@ Public Class Form3
     End Sub
 
     Private Sub btnGuardar_Click(sender As Object, e As EventArgs) Handles btnGuardar.Click
-        If txtNombre.Text.Trim() = "" Then MsgBox("Escribe el nombre del producto.") : Return
-        If txtPrecio.Text.Trim() = "" Then MsgBox("Escribe el precio.") : Return
-        If txtStock.Text.Trim() = "" Then MsgBox("Escribe el stock.") : Return
+        If txtNombre.Text.Trim() = "" Then ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el nombre del producto.", ModMensajes.TipoAviso.Advertencia) : Return
+        If txtPrecio.Text.Trim() = "" Then ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el precio del producto.", ModMensajes.TipoAviso.Advertencia) : Return
+        If txtStock.Text.Trim() = "" Then ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el stock disponible.", ModMensajes.TipoAviso.Advertencia) : Return
 
         Dim nombre As String = txtNombre.Text.Trim()
         If nombre.Length > 30 Then
@@ -326,17 +326,17 @@ Public Class Form3
         Dim stock As Integer
 
         If Not Decimal.TryParse(txtPrecio.Text, precio) OrElse precio <= 0D Then
-            MsgBox("Escribe un precio valido.")
+            ModMensajes.Mostrar(Me, "Precio no valido", "El precio debe ser un numero mayor a cero.", ModMensajes.TipoAviso.Advertencia)
             Return
         End If
 
         If Not Integer.TryParse(txtStock.Text, stock) OrElse stock < 0 Then
-            MsgBox("Escribe un stock valido.")
+            ModMensajes.Mostrar(Me, "Stock no valido", "El stock debe ser un numero entero igual o mayor a cero.", ModMensajes.TipoAviso.Advertencia)
             Return
         End If
 
         If cbCatDetalle.Items.Count = 0 OrElse cbCatDetalle.Text.Trim() = "" Then
-            MsgBox("Selecciona una categoria valida antes de guardar.")
+            ModMensajes.Mostrar(Me, "Categoria requerida", "Selecciona una categoria valida antes de guardar.", ModMensajes.TipoAviso.Advertencia)
             cbCatDetalle.Focus()
             Return
         End If
@@ -404,12 +404,12 @@ Public Class Form3
                 End If
 
                 trans.Commit()
-                MsgBox(If(idSeleccionado = 0, "Producto agregado correctamente.", "Producto actualizado correctamente."))
+                ModMensajes.Mostrar(Me, "Producto guardado", If(idSeleccionado = 0, "Producto agregado correctamente.", "Producto actualizado correctamente."), ModMensajes.TipoAviso.Exito)
                 ModActualizaciones.NotificarInventarioActualizado()
 
             Catch ex As Exception
                 trans.Rollback()
-                MsgBox("Error al guardar: " & ex.Message)
+                ModMensajes.Mostrar(Me, "No se pudo guardar", "No se guardo el producto." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
             End Try
         End Using
 
@@ -417,8 +417,8 @@ Public Class Form3
     End Sub
 
     Private Sub btnEliminar_Click(sender As Object, e As EventArgs) Handles btnEliminar.Click
-        If idSeleccionado = 0 Then MsgBox("Selecciona un producto de la lista.") : Return
-        If MsgBox("Eliminar " & txtNombre.Text & "?", MsgBoxStyle.YesNo, "Confirmar") = MsgBoxResult.Yes Then
+        If idSeleccionado = 0 Then ModMensajes.Mostrar(Me, "Selecciona un producto", "Elige un producto de la lista antes de eliminarlo.", ModMensajes.TipoAviso.Advertencia) : Return
+        If ModMensajes.Confirmar(Me, "Eliminar producto", "Deseas eliminar " & txtNombre.Text & " del inventario?", "Eliminar", "Cancelar", ModMensajes.TipoAviso.Advertencia) Then
             Using cn = ObtenerConexion()
                 cn.Open()
                 Dim trans = cn.BeginTransaction()
@@ -435,12 +435,12 @@ Public Class Form3
                     End Using
 
                     trans.Commit()
-                    MsgBox("Producto eliminado.")
+                    ModMensajes.Mostrar(Me, "Producto eliminado", "El producto se elimino correctamente.", ModMensajes.TipoAviso.Exito)
                     ModActualizaciones.NotificarInventarioActualizado()
 
                 Catch ex As Exception
                     trans.Rollback()
-                    MsgBox("Error al eliminar: " & ex.Message)
+                    ModMensajes.Mostrar(Me, "No se pudo eliminar", "El producto no se elimino." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
                 End Try
             End Using
 

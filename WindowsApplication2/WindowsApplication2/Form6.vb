@@ -1,4 +1,5 @@
 Imports System.Data.SqlClient
+Imports System.Drawing.Printing
 
 Public Class Form6
 
@@ -12,7 +13,15 @@ Public Class Form6
     Private Class TicketData
         Public Property Numero As String
         Public Property Fecha As String
+        Public Property Subtotal As Decimal
+        Public Property Descuento As Decimal
+        Public Property BaseGravable As Decimal
+        Public Property IVA As Decimal
+        Public Property TasaIVA As Decimal
         Public Property Total As Decimal
+        Public Property MetodoPago As String
+        Public Property PagoCon As Decimal
+        Public Property Cambio As Decimal
         Public Property Detalles As List(Of TicketDetalle)
     End Class
 
@@ -51,7 +60,7 @@ Public Class Form6
         pnlHeader.BackColor = CLR_PANEL_PREMIUM
         InsertarLogoHeader()
         lblTitulo.ForeColor = CLR_DARK_PREMIUM
-        lblTitulo.Text = "KUMO | Ticket premium"
+        lblTitulo.Text = "KUMO | Ticket"
         pnlLinea.BackColor = Color.FromArgb(214, 189, 150)
         gbPreview.BackColor = CLR_SURFACE_PREMIUM
         gbPreview.ForeColor = CLR_TEXT_PREMIUM
@@ -94,20 +103,40 @@ Public Class Form6
             PintarMetaTicket(datos)
             RenderizarTicket(datos)
         Catch ex As Exception
-            MsgBox("Error al generar ticket: " & ex.Message)
+            ModMensajes.Mostrar(Me, "Ticket no disponible", "No se pudo generar la vista del ticket." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
     Private Shared Function ObtenerDatosTicket(idVenta As Integer) As TicketData
+        AsegurarColumnasPagoPedido()
+
         Dim venta = ObtenerTabla(
-            "SELECT Fecha, Total FROM PEDIDOS WHERE Id_Pedido = @id",
+            "SELECT Fecha, " &
+            "ISNULL(Subtotal, Total) AS Subtotal, " &
+            "ISNULL(Descuento, 0) AS Descuento, " &
+            "ISNULL(BaseGravable, ISNULL(Subtotal, Total) - ISNULL(Descuento, 0)) AS BaseGravable, " &
+            "ISNULL(IVA, 0) AS IVA, " &
+            "ISNULL(TasaIVA, 0) AS TasaIVA, " &
+            "Total, " &
+            "ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, " &
+            "ISNULL(PagoCon, Total) AS PagoCon, " &
+            "ISNULL(Cambio, 0) AS Cambio " &
+            "FROM PEDIDOS WHERE Id_Pedido = @id",
             New SqlParameter("@id", idVenta))
 
         If venta.Rows.Count = 0 Then
             Return New TicketData With {
                 .Numero = "V-" & idVenta.ToString("000"),
                 .Fecha = "Sin registro",
+                .Subtotal = 0D,
+                .Descuento = 0D,
+                .BaseGravable = 0D,
+                .IVA = 0D,
+                .TasaIVA = 0D,
                 .Total = 0D,
+                .MetodoPago = "Efectivo",
+                .PagoCon = 0D,
+                .Cambio = 0D,
                 .Detalles = New List(Of TicketDetalle)()
             }
         End If
@@ -115,7 +144,15 @@ Public Class Form6
         Dim datos As New TicketData With {
             .Numero = "V-" & idVenta.ToString("000"),
             .Fecha = ModEstilo.FormatoFechaHora24(CDate(venta.Rows(0)("Fecha"))),
+            .Subtotal = CDec(venta.Rows(0)("Subtotal")),
+            .Descuento = CDec(venta.Rows(0)("Descuento")),
+            .BaseGravable = CDec(venta.Rows(0)("BaseGravable")),
+            .IVA = CDec(venta.Rows(0)("IVA")),
+            .TasaIVA = CDec(venta.Rows(0)("TasaIVA")),
             .Total = CDec(venta.Rows(0)("Total")),
+            .MetodoPago = venta.Rows(0)("MetodoPago").ToString(),
+            .PagoCon = CDec(venta.Rows(0)("PagoCon")),
+            .Cambio = CDec(venta.Rows(0)("Cambio")),
             .Detalles = New List(Of TicketDetalle)()
         }
 
@@ -127,13 +164,26 @@ Public Class Form6
             "WHERE d.Id_Pedido = @id",
             New SqlParameter("@id", idVenta))
 
+        Dim sumaDetalles As Decimal = 0D
         For Each row As DataRow In dt.Rows
+            Dim subtotalDetalle As Decimal = CDec(row("Subtotal"))
+            sumaDetalles += subtotalDetalle
             datos.Detalles.Add(New TicketDetalle With {
                 .Nombre = row("Nombre").ToString(),
                 .Cantidad = CInt(row("Cantidad")),
-                .Subtotal = CDec(row("Subtotal"))
+                .Subtotal = subtotalDetalle
             })
         Next
+
+        If datos.Subtotal <= 0D AndAlso sumaDetalles > 0D Then datos.Subtotal = sumaDetalles
+        If datos.BaseGravable <= 0D Then datos.BaseGravable = Math.Max(0D, datos.Subtotal - datos.Descuento)
+        If datos.IVA < 0D Then datos.IVA = 0D
+        If datos.TasaIVA <= 0D AndAlso datos.IVA > 0D AndAlso datos.BaseGravable > 0D Then
+            datos.TasaIVA = Math.Round((datos.IVA / datos.BaseGravable) * 100D, 2)
+        End If
+        If datos.Descuento <= 0D Then datos.Descuento = Math.Max(0D, datos.Subtotal - datos.BaseGravable)
+        If datos.PagoCon <= 0D Then datos.PagoCon = datos.Total
+        If datos.Cambio < 0D Then datos.Cambio = 0D
 
         Return datos
     End Function
@@ -159,11 +209,93 @@ Public Class Form6
         Next
 
         sb.AppendLine("--------------------------------")
-        sb.AppendLine("TOTAL:".PadRight(24) & "$" & datos.Total.ToString("N2").PadLeft(8))
+        sb.AppendLine(FormatearLineaTicket("SUBTOTAL:", datos.Subtotal))
+        sb.AppendLine(FormatearLineaTicket("DESCUENTO:", datos.Descuento, "-$"))
+        sb.AppendLine(FormatearLineaTicket("BASE IVA:", datos.BaseGravable))
+        sb.AppendLine("--------------------------------")
+        sb.AppendLine("TRASLACION DE IMPUESTOS")
+        sb.AppendLine(FormatearLineaTicket("IVA " & datos.TasaIVA.ToString("N0") & "%:", datos.IVA))
+        sb.AppendLine("--------------------------------")
+        sb.AppendLine(FormatearLineaTicket("TOTAL A PAGAR:", datos.Total))
+        sb.AppendLine("METODO:".PadRight(20) & datos.MetodoPago.PadLeft(12))
+        sb.AppendLine(FormatearLineaTicket("PAGO CON:", datos.PagoCon))
+        sb.AppendLine(FormatearLineaTicket("CAMBIO:", datos.Cambio))
         sb.AppendLine("================================")
         sb.AppendLine("      gracias por tu compra")
         sb.AppendLine("        vuelve muy pronto")
         Return sb.ToString()
+    End Function
+
+    Private Shared Function FormatearLineaTicket(etiqueta As String, monto As Decimal, Optional prefijo As String = "$") As String
+        Dim textoMonto As String = prefijo & monto.ToString("N2")
+        Return etiqueta.PadRight(20) & textoMonto.PadLeft(12)
+    End Function
+
+    Public Shared Function MostrarVistaPreviaTicket(texto As String,
+                                                    owner As IWin32Window,
+                                                    Optional titulo As String = "Ticket de venta") As Boolean
+        If String.IsNullOrWhiteSpace(texto) Then
+            ModMensajes.Mostrar(owner, "Ticket vacio", "No hay informacion para imprimir en el ticket.", ModMensajes.TipoAviso.Advertencia)
+            Return False
+        End If
+
+        Try
+            If PrinterSettings.InstalledPrinters.Count = 0 Then
+                ModMensajes.Mostrar(owner, "Impresora no disponible", "Windows no tiene impresoras instaladas. Agrega una impresora o selecciona Microsoft Print to PDF como predeterminada.", ModMensajes.TipoAviso.Advertencia)
+                Return False
+            End If
+
+            Using pd As New PrintDocument()
+                pd.DocumentName = titulo
+
+                Dim impresoraValida As Boolean = pd.PrinterSettings IsNot Nothing AndAlso pd.PrinterSettings.IsValid
+                If Not impresoraValida Then
+                    For Each impresora As String In PrinterSettings.InstalledPrinters
+                        pd.PrinterSettings.PrinterName = impresora
+                        If pd.PrinterSettings.IsValid Then
+                            impresoraValida = True
+                            Exit For
+                        End If
+                    Next
+                End If
+
+                If Not impresoraValida Then
+                    ModMensajes.Mostrar(owner, "Impresora no disponible", "La impresora predeterminada no esta disponible. Revisa que este encendida o cambia la impresora predeterminada en Windows.", ModMensajes.TipoAviso.Advertencia)
+                    Return False
+                End If
+
+                pd.DefaultPageSettings.Margins = New Margins(10, 10, 10, 10)
+
+                AddHandler pd.PrintPage,
+                    Sub(s, ev)
+                        Using fuente As New Font("Courier New", 8)
+                            ev.Graphics.DrawString(texto, fuente, Brushes.Black, ev.MarginBounds.Left, ev.MarginBounds.Top)
+                        End Using
+                    End Sub
+
+                Using preview As New PrintPreviewDialog()
+                    preview.Document = pd
+                    preview.Text = titulo
+                    preview.StartPosition = FormStartPosition.CenterParent
+                    preview.Width = 900
+                    preview.Height = 700
+
+                    If owner Is Nothing Then
+                        preview.ShowDialog()
+                    Else
+                        preview.ShowDialog(owner)
+                    End If
+                End Using
+            End Using
+
+            Return True
+        Catch ex As InvalidPrinterException
+            ModMensajes.Mostrar(owner, "Impresora no disponible", "No se encontro una impresora valida. Revisa la impresora predeterminada de Windows." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+        Catch ex As Exception
+            ModMensajes.Mostrar(owner, "Error de impresion", "No se pudo preparar la impresion del ticket." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+        End Try
+
+        Return False
     End Function
 
     Private Sub PintarMetaTicket(datos As TicketData)
@@ -182,6 +314,7 @@ Public Class Form6
 
         AppendTexto("Resumen" & Environment.NewLine, New Font("Segoe UI", 9.0F, FontStyle.Bold), CLR_DARK_PREMIUM)
         AppendTexto("Folio: " & datos.Numero & Environment.NewLine, New Font("Segoe UI", 9.0F), CLR_TEXT_PREMIUM)
+        AppendTexto("Metodo: " & datos.MetodoPago & Environment.NewLine, New Font("Segoe UI", 9.0F), CLR_TEXT_PREMIUM)
         AppendTexto("Fecha: " & datos.Fecha & Environment.NewLine & Environment.NewLine, New Font("Segoe UI", 9.0F), CLR_TEXT_PREMIUM)
 
         AppendTexto("Productos" & Environment.NewLine, New Font("Segoe UI", 9.0F, FontStyle.Bold), CLR_DARK_PREMIUM)
@@ -204,10 +337,26 @@ Public Class Form6
             Next
         End If
 
+        AppendTexto("Totales" & Environment.NewLine, New Font("Segoe UI", 9.0F, FontStyle.Bold), CLR_DARK_PREMIUM)
+        AppendTexto("Subtotal $" & datos.Subtotal.ToString("N2") & Environment.NewLine &
+                    "Descuento -$" & datos.Descuento.ToString("N2") & Environment.NewLine &
+                    "Base gravable $" & datos.BaseGravable.ToString("N2") & Environment.NewLine,
+                    New Font("Consolas", 8.75F, FontStyle.Regular),
+                    Color.FromArgb(122, 108, 92))
+
+        AppendTexto("Traslacion de impuestos" & Environment.NewLine, New Font("Segoe UI", 8.5F, FontStyle.Bold), CLR_ACCENT_PREMIUM)
+        AppendTexto("IVA " & datos.TasaIVA.ToString("N0") & "% $" & datos.IVA.ToString("N2") & Environment.NewLine & Environment.NewLine,
+                    New Font("Consolas", 8.75F, FontStyle.Bold),
+                    Color.FromArgb(74, 133, 95))
+
         AppendTexto("Total cobrado" & Environment.NewLine, New Font("Segoe UI", 8.5F, FontStyle.Bold), CLR_ACCENT_PREMIUM)
         AppendTexto("$" & datos.Total.ToString("N2") & Environment.NewLine & Environment.NewLine,
                     New Font("Segoe UI", 16.0F, FontStyle.Bold),
                     CLR_DARK_PREMIUM)
+
+        AppendTexto("Metodo " & datos.MetodoPago & "    Pago $" & datos.PagoCon.ToString("N2") & "    Cambio $" & datos.Cambio.ToString("N2") & Environment.NewLine & Environment.NewLine,
+                    New Font("Consolas", 8.75F, FontStyle.Bold),
+                    Color.FromArgb(122, 108, 92))
 
         AppendTexto("Gracias por tu compra." & Environment.NewLine, New Font("Segoe UI", 9.0F, FontStyle.Bold), CLR_DARK_PREMIUM, HorizontalAlignment.Center)
         AppendTexto("Te esperamos pronto en KUMO.", New Font("Segoe UI", 8.5F), CLR_ACCENT_PREMIUM, HorizontalAlignment.Center)
@@ -230,18 +379,10 @@ Public Class Form6
     End Sub
 
     Private Sub btnImprimir_Click(sender As Object, e As EventArgs) Handles btnImprimir.Click
-        Dim pd As New Printing.PrintDocument()
-        AddHandler pd.PrintPage,
-            Sub(s, ev)
-                ev.Graphics.DrawString(
-                    rtb.Text,
-                    New System.Drawing.Font("Courier New", 8),
-                    System.Drawing.Brushes.Black, 10, 10)
-            End Sub
+        Dim texto As String = rtb.Text
+        If idVenta > 0 Then texto = ObtenerTextoTicket(idVenta)
 
-        Dim preview As New PrintPreviewDialog()
-        preview.Document = pd
-        preview.ShowDialog()
+        MostrarVistaPreviaTicket(texto, Me, "Ticket de venta V-" & idVenta.ToString("000"))
     End Sub
 
     Private Sub btnCerrar_Click(sender As Object, e As EventArgs) Handles btnCerrar.Click

@@ -32,6 +32,34 @@ Module DbKumo
         End Using
     End Function
 
+    Public Sub AsegurarColumnasPagoPedido()
+        Using cn = ObtenerConexion()
+            cn.Open()
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Subtotal') IS NULL ALTER TABLE PEDIDOS ADD Subtotal DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Descuento') IS NULL ALTER TABLE PEDIDOS ADD Descuento DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'BaseGravable') IS NULL ALTER TABLE PEDIDOS ADD BaseGravable DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'IVA') IS NULL ALTER TABLE PEDIDOS ADD IVA DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'TasaIVA') IS NULL ALTER TABLE PEDIDOS ADD TasaIVA DECIMAL(5,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'MetodoPago') IS NULL ALTER TABLE PEDIDOS ADD MetodoPago VARCHAR(30) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'PagoCon') IS NULL ALTER TABLE PEDIDOS ADD PagoCon DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Cambio') IS NULL ALTER TABLE PEDIDOS ADD Cambio DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Subtotal = ISNULL(Subtotal, Total) WHERE Subtotal IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Descuento = ISNULL(Descuento, 0) WHERE Descuento IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET IVA = ISNULL(IVA, 0) WHERE IVA IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET BaseGravable = ISNULL(BaseGravable, Total - ISNULL(IVA, 0)) WHERE BaseGravable IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET TasaIVA = ISNULL(TasaIVA, 0) WHERE TasaIVA IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET MetodoPago = ISNULL(NULLIF(MetodoPago, ''), 'Efectivo') WHERE MetodoPago IS NULL OR MetodoPago = ''")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET PagoCon = ISNULL(PagoCon, Total) WHERE PagoCon IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Cambio = ISNULL(Cambio, 0) WHERE Cambio IS NULL")
+        End Using
+    End Sub
+
+    Private Sub EjecutarSqlPagoPedido(cn As SqlConnection, sql As String)
+        Using cmd As New SqlCommand(sql, cn)
+            cmd.ExecuteNonQuery()
+        End Using
+    End Sub
+
     Public Function ObtenerIdCliente(nombreCompleto As String, telefono As String, trans As SqlTransaction) As Integer
         Dim nombres As String = nombreCompleto.Trim()
         Dim apellidos As String = ""

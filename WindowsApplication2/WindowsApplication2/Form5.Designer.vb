@@ -484,7 +484,7 @@
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.Name = "Form5"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "KUMO | Pedidos premium"
+        Me.Text = "KUMO | Pedidos"
         Me.gbForm.ResumeLayout(False)
         Me.gbForm.PerformLayout()
         Me.gbLista.ResumeLayout(False)
@@ -499,7 +499,7 @@
         Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
         Me.ClientSize = New System.Drawing.Size(1536, 864)
         Me.BackColor = System.Drawing.Color.FromArgb(244, 240, 234)
-        Me.Text = "KUMO | Pedidos premium"
+        Me.Text = "KUMO | Pedidos"
         Me.btnCargar.SetBounds(14, 706, 479, 34)
         Me.btnCargar.BackColor = System.Drawing.Color.FromArgb(46, 52, 60)
         Me.btnCargar.ForeColor = System.Drawing.Color.FromArgb(255, 255, 255)

@@ -3,6 +3,9 @@ Imports System.Data.SqlClient
 Public Class Form4
 
     Private _cargandoVentas As Boolean
+    Private gbDetalleVenta As GroupBox
+    Private dgvDetalleVenta As DataGridView
+    Private lblDetalleResumen As Label
 
     Private ReadOnly CLR_BG_PREMIUM As Color = Color.FromArgb(244, 240, 234)
     Private ReadOnly CLR_SURFACE_PREMIUM As Color = Color.FromArgb(255, 252, 247)
@@ -46,7 +49,7 @@ Public Class Form4
     Private Sub PrepararFormularioHistorial()
         Me.MinimumSize = New Size(1180, 720)
         Me.BackColor = CLR_BG_PREMIUM
-        Me.Text = "KUMO | Historial premium"
+        Me.Text = "KUMO | Historial"
         Me.DoubleBuffered = True
     End Sub
 
@@ -61,8 +64,10 @@ Public Class Form4
 
         Me.BackColor = CLR_BG_PREMIUM
 
+        InicializarDetalleVenta()
         EstilarGroupBox(gbFiltro, "Filtro de ventas")
         EstilarGroupBox(gbTabla, "Historial de ventas")
+        EstilarGroupBox(gbDetalleVenta, "Detalle de venta")
 
         lblFechaTxt.Text = "Fecha"
         lblFechaTxt.ForeColor = CLR_MUTED_PREMIUM
@@ -85,7 +90,7 @@ Public Class Form4
         btnBuscar.Text = "Ver corte"
         btnHoy.Text = "Hoy"
         btnTicket.Text = "Abrir ticket"
-        btnImprimir.Text = "Exportar"
+        btnImprimir.Text = "Imprimir ticket"
         btnRegresar.Text = "Cerrar"
 
         btnBuscar.BackColor = CLR_DARK_PREMIUM
@@ -150,27 +155,56 @@ Public Class Form4
     End Sub
 
     Private Sub EstilarTabla()
-        dgvVentas.BackgroundColor = CLR_SURFACE_PREMIUM
-        dgvVentas.BorderStyle = BorderStyle.None
-        dgvVentas.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
-        dgvVentas.GridColor = Color.FromArgb(229, 217, 201)
-        dgvVentas.RowHeadersVisible = False
-        dgvVentas.EnableHeadersVisualStyles = False
-        dgvVentas.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None
-        dgvVentas.ColumnHeadersHeight = 34
-        dgvVentas.ColumnHeadersDefaultCellStyle.BackColor = CLR_DARK_PREMIUM
-        dgvVentas.ColumnHeadersDefaultCellStyle.ForeColor = Color.White
-        dgvVentas.ColumnHeadersDefaultCellStyle.SelectionBackColor = CLR_DARK_PREMIUM
-        dgvVentas.ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 8.75F, FontStyle.Bold)
-        dgvVentas.DefaultCellStyle.BackColor = CLR_SURFACE_PREMIUM
-        dgvVentas.DefaultCellStyle.ForeColor = CLR_TEXT_PREMIUM
-        dgvVentas.DefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 236, 223)
-        dgvVentas.DefaultCellStyle.SelectionForeColor = CLR_TEXT_PREMIUM
-        dgvVentas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(252, 248, 242)
-        dgvVentas.AlternatingRowsDefaultCellStyle.ForeColor = CLR_TEXT_PREMIUM
-        dgvVentas.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 236, 223)
-        dgvVentas.AlternatingRowsDefaultCellStyle.SelectionForeColor = CLR_TEXT_PREMIUM
-        dgvVentas.RowTemplate.Height = 32
+        For Each dgv As DataGridView In New DataGridView() {dgvVentas, dgvDetalleVenta}
+            If dgv Is Nothing Then Continue For
+            dgv.BackgroundColor = CLR_SURFACE_PREMIUM
+            dgv.BorderStyle = BorderStyle.None
+            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
+            dgv.GridColor = Color.FromArgb(229, 217, 201)
+            dgv.RowHeadersVisible = False
+            dgv.EnableHeadersVisualStyles = False
+            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None
+            dgv.ColumnHeadersHeight = 34
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = CLR_DARK_PREMIUM
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White
+            dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = CLR_DARK_PREMIUM
+            dgv.ColumnHeadersDefaultCellStyle.Font = New Font("Segoe UI", 8.75F, FontStyle.Bold)
+            dgv.DefaultCellStyle.BackColor = CLR_SURFACE_PREMIUM
+            dgv.DefaultCellStyle.ForeColor = CLR_TEXT_PREMIUM
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 236, 223)
+            dgv.DefaultCellStyle.SelectionForeColor = CLR_TEXT_PREMIUM
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(252, 248, 242)
+            dgv.AlternatingRowsDefaultCellStyle.ForeColor = CLR_TEXT_PREMIUM
+            dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = Color.FromArgb(245, 236, 223)
+            dgv.AlternatingRowsDefaultCellStyle.SelectionForeColor = CLR_TEXT_PREMIUM
+            dgv.RowTemplate.Height = 32
+            dgv.AllowUserToAddRows = False
+            dgv.AllowUserToDeleteRows = False
+            dgv.ReadOnly = True
+            dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+            dgv.MultiSelect = False
+        Next
+    End Sub
+
+    Private Sub InicializarDetalleVenta()
+        If gbDetalleVenta IsNot Nothing Then Return
+
+        gbDetalleVenta = New GroupBox() With {.Name = "gbDetalleVenta", .Text = "Detalle de venta"}
+        lblDetalleResumen = New Label() With {
+            .Name = "lblDetalleResumen",
+            .Text = "Selecciona una venta para ver sus productos.",
+            .ForeColor = CLR_MUTED_PREMIUM,
+            .Font = New Font("Segoe UI", 8.75F, FontStyle.Bold),
+            .AutoEllipsis = True
+        }
+        dgvDetalleVenta = New DataGridView() With {
+            .Name = "dgvDetalleVenta",
+            .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        }
+
+        gbDetalleVenta.Controls.Add(lblDetalleResumen)
+        gbDetalleVenta.Controls.Add(dgvDetalleVenta)
+        Me.Controls.Add(gbDetalleVenta)
     End Sub
 
     Private Sub EstilarBarraEstado()
@@ -205,10 +239,14 @@ Public Class Form4
         pnlPromedio.SetBounds(pnlVentas.Right + esp, yResumen, anchoPanel, altoResumen)
         pnlArticulos.SetBounds(pnlPromedio.Right + esp, yResumen, Me.ClientSize.Width - margen - pnlPromedio.Right - esp, altoResumen)
 
-        gbTabla.SetBounds(margen, yTabla, Me.ClientSize.Width - (margen * 2), altoTabla)
+        Dim anchoTabla As Integer = CInt((Me.ClientSize.Width - (margen * 2) - esp) * 0.58)
+        gbTabla.SetBounds(margen, yTabla, anchoTabla, altoTabla)
+        gbDetalleVenta.SetBounds(gbTabla.Right + esp, yTabla, Me.ClientSize.Width - margen - gbTabla.Right - esp, altoTabla)
         dgvVentas.SetBounds(14, 30, gbTabla.Width - 28, gbTabla.Height - 94)
         btnTicket.SetBounds(14, gbTabla.Height - 48, 150, 34)
         btnImprimir.SetBounds(btnTicket.Right + 12, gbTabla.Height - 48, 150, 34)
+        lblDetalleResumen.SetBounds(14, 30, gbDetalleVenta.Width - 28, 24)
+        dgvDetalleVenta.SetBounds(14, 60, gbDetalleVenta.Width - 28, gbDetalleVenta.Height - 74)
 
         PosicionarContenidoPanelResumen(pnlIngresos, lblIngresosTitle, lblIngresosVal, lblIngresosSub)
         PosicionarContenidoPanelResumen(pnlVentas, lblVentasTitle, lblVentasVal, lblVentasSub)
@@ -222,7 +260,9 @@ Public Class Form4
         pnlPromedio.Anchor = AnchorStyles.Top Or AnchorStyles.Left
         pnlArticulos.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         gbTabla.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        gbDetalleVenta.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Right
         dgvVentas.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        dgvDetalleVenta.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         btnTicket.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
         btnImprimir.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
     End Sub
@@ -254,10 +294,13 @@ Public Class Form4
 
         Dim fecha As Date = dtpFecha.Value.Date
         Try
+            Await Task.Run(Sub() AsegurarColumnasPagoPedido())
+
             Dim ventas = Await Task.Run(Function()
                                             Return ObtenerTabla(
                                                 "SELECT Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-                                                "CONVERT(varchar, Fecha, 103) AS [Fecha], Total " &
+                                                "CONVERT(varchar, Fecha, 103) AS [Fecha], ISNULL(MetodoPago, 'Efectivo') AS [Metodo], " &
+                                                "ISNULL(Subtotal, Total) AS [Subtotal], ISNULL(Descuento, 0) AS [Descuento], ISNULL(IVA, 0) AS [IVA], Total " &
                                                 "FROM PEDIDOS WHERE CAST(Fecha AS DATE) = @fecha ORDER BY Fecha DESC",
                                                 New SqlParameter("@fecha", fecha))
                                         End Function)
@@ -278,6 +321,7 @@ Public Class Form4
                                            End Function)
 
             dgvVentas.DataSource = ventas
+            FormatearColumnasVentas()
 
             If resumen.Rows.Count > 0 Then
                 lblVentasVal.Text = resumen.Rows(0)("VentasDia").ToString()
@@ -286,9 +330,10 @@ Public Class Form4
             End If
 
             lblArticulosVal.Text = articulos.ToString()
+            CargarDetalleVentaSeleccionada()
 
         Catch ex As Exception
-            MsgBox("Error al cargar ventas: " & ex.Message)
+            ModMensajes.Mostrar(Me, "Ventas no disponibles", "No se pudieron cargar las ventas del historial." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
         Finally
             sbInfo.Text = "  Ventas: " & lblVentasVal.Text & "  |  Ingresos: " & lblIngresosVal.Text & "  |  " & dtpFecha.Value.ToString("dd/MM/yyyy")
             gbTabla.Text = "Ventas del dia - " & dtpFecha.Value.ToString("dd/MM/yyyy")
@@ -296,6 +341,71 @@ Public Class Form4
             _cargandoVentas = False
         End Try
     End Function
+
+    Private Sub FormatearColumnasVentas()
+        For Each nombre As String In New String() {"Subtotal", "Descuento", "IVA", "Total"}
+            If dgvVentas.Columns.Contains(nombre) Then dgvVentas.Columns(nombre).DefaultCellStyle.Format = "C2"
+        Next
+    End Sub
+
+    Private Sub dgvVentas_SelectionChanged(sender As Object, e As EventArgs) Handles dgvVentas.SelectionChanged
+        If _cargandoVentas Then Return
+        CargarDetalleVentaSeleccionada()
+    End Sub
+
+    Private Sub CargarDetalleVentaSeleccionada()
+        If dgvVentas.CurrentRow Is Nothing Then
+            LimpiarDetalleVenta()
+            Return
+        End If
+
+        Dim id As Integer = 0
+        If Not Integer.TryParse(dgvVentas.CurrentRow.Cells("N Venta").Value.ToString(), id) Then
+            LimpiarDetalleVenta()
+            Return
+        End If
+
+        CargarDetalleVenta(id)
+    End Sub
+
+    Private Sub CargarDetalleVenta(id As Integer)
+        Try
+            Dim venta = ObtenerTabla(
+                "SELECT ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, ISNULL(PagoCon, Total) AS PagoCon, " &
+                "ISNULL(Cambio, 0) AS Cambio, Total FROM PEDIDOS WHERE Id_Pedido = @id",
+                New SqlParameter("@id", id))
+
+            Dim detalle = ObtenerTabla(
+                "SELECT p.NombrePr AS [Producto], d.Cantidad, d.PrecioVentaMomento AS [Precio unitario], " &
+                "(d.Cantidad * d.PrecioVentaMomento) AS [Importe] " &
+                "FROM DET_PEDIDOS d " &
+                "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
+                "WHERE d.Id_Pedido = @id ORDER BY p.NombrePr",
+                New SqlParameter("@id", id))
+
+            dgvDetalleVenta.DataSource = detalle
+            If dgvDetalleVenta.Columns.Contains("Precio unitario") Then dgvDetalleVenta.Columns("Precio unitario").DefaultCellStyle.Format = "C2"
+            If dgvDetalleVenta.Columns.Contains("Importe") Then dgvDetalleVenta.Columns("Importe").DefaultCellStyle.Format = "C2"
+
+            If venta.Rows.Count > 0 Then
+                Dim row = venta.Rows(0)
+                lblDetalleResumen.Text = "Venta V-" & id.ToString("000") &
+                    " | " & row("MetodoPago").ToString() &
+                    " | Total $" & CDec(row("Total")).ToString("N2") &
+                    " | Pago $" & CDec(row("PagoCon")).ToString("N2") &
+                    " | Cambio $" & CDec(row("Cambio")).ToString("N2")
+            Else
+                lblDetalleResumen.Text = "Venta V-" & id.ToString("000")
+            End If
+        Catch ex As Exception
+            ModMensajes.Mostrar(Me, "Detalle no disponible", "No se pudo cargar el detalle de la venta." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+        End Try
+    End Sub
+
+    Private Sub LimpiarDetalleVenta()
+        If dgvDetalleVenta IsNot Nothing Then dgvDetalleVenta.DataSource = Nothing
+        If lblDetalleResumen IsNot Nothing Then lblDetalleResumen.Text = "Selecciona una venta para ver sus productos."
+    End Sub
 
     Private Sub CambiarEstadoCarga(cargando As Boolean)
         btnBuscar.Enabled = Not cargando
@@ -307,7 +417,7 @@ Public Class Form4
 
     Private Sub btnTicket_Click(sender As Object, e As EventArgs) Handles btnTicket.Click
         If dgvVentas.CurrentRow Is Nothing Then
-            MsgBox("Selecciona una venta de la lista.")
+            ModMensajes.Mostrar(Me, "Selecciona una venta", "Elige una venta de la lista para abrir su ticket.", ModMensajes.TipoAviso.Advertencia)
             Return
         End If
 
@@ -317,7 +427,14 @@ Public Class Form4
     End Sub
 
     Private Sub btnImprimir_Click(sender As Object, e As EventArgs) Handles btnImprimir.Click
-        MsgBox("Funcion de impresion disponible proximamente.")
+        If dgvVentas.CurrentRow Is Nothing Then
+            ModMensajes.Mostrar(Me, "Selecciona una venta", "Elige una venta de la lista para imprimir su ticket.", ModMensajes.TipoAviso.Advertencia)
+            Return
+        End If
+
+        Dim id As Integer = CInt(dgvVentas.CurrentRow.Cells("N Venta").Value)
+        Dim texto = Form6.ObtenerTextoTicket(id)
+        Form6.MostrarVistaPreviaTicket(texto, Me, "Ticket de venta V-" & id.ToString("000"))
     End Sub
 
     Private Sub btnRegresar_Click(sender As Object, e As EventArgs) Handles btnRegresar.Click

@@ -395,7 +395,7 @@
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.Name = "Form3"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "KUMO | Inventario premium"
+        Me.Text = "KUMO | Inventario"
         Me.gbFiltro.ResumeLayout(False)
         Me.gbFiltro.PerformLayout()
         Me.gbTabla.ResumeLayout(False)
@@ -413,7 +413,7 @@
         Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
         Me.ClientSize = New System.Drawing.Size(1536, 864)
         Me.BackColor = System.Drawing.Color.FromArgb(245, 247, 250)
-        Me.Text = "KUMO | Inventario premium"
+        Me.Text = "KUMO | Inventario"
         Me.btnActualizar.SetBounds(414, 14, 138, 40)
         Me.btnActualizar.BackColor = System.Drawing.Color.FromArgb(255, 252, 247)
         Me.btnActualizar.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)

@@ -42,7 +42,7 @@ Public Class Form8
             CargarVentas()
             AplicarDisenoCancelaciones()
         Catch ex As Exception
-            MsgBox("Error al cargar el formulario: " & ex.Message)
+            ModMensajes.Mostrar(Me, "Cancelaciones no disponibles", "No se pudo cargar el formulario de cancelaciones." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -59,7 +59,7 @@ Public Class Form8
 
     Private Sub AplicarEstiloCancelacionesPremium()
         Me.BackColor = CLR_BG_PREMIUM
-        Me.Text = "KUMO | Cancelaciones premium"
+        Me.Text = "KUMO | Cancelaciones"
 
         gbFiltro.BackColor = CLR_PANEL_PREMIUM
         gbFiltro.ForeColor = CLR_TEXT_PREMIUM
@@ -192,7 +192,7 @@ Public Class Form8
                 sbInfo.Text = "  Ventas del " & dtpFecha.Value.ToString("dd/MM/yyyy") &
                               "  |  Total registros: " & dt.Rows.Count
             Catch ex As Exception
-                MsgBox("Error al cargar ventas: " & ex.Message)
+                ModMensajes.Mostrar(Me, "Ventas no disponibles", "No se pudieron cargar las ventas para cancelar." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
             End Try
         End Using
     End Sub
@@ -220,21 +220,21 @@ Public Class Form8
                 dgvDetalle.DataSource = dt
                 gbDetalle.Text = "Detalle de Venta - V-" & id.ToString("000")
             Catch ex As Exception
-                MsgBox("Error al cargar detalle: " & ex.Message)
+                ModMensajes.Mostrar(Me, "Detalle no disponible", "No se pudo cargar el detalle de la venta." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
             End Try
         End Using
     End Sub
 
     Private Sub btnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click
         If idSeleccionado = 0 Then
-            MsgBox("Selecciona una venta de la lista.")
+            ModMensajes.Mostrar(Me, "Selecciona una venta", "Elige una venta de la lista antes de cancelarla.", ModMensajes.TipoAviso.Advertencia)
             Return
         End If
 
-        If MsgBox("Confirmar cancelacion de V-" & idSeleccionado.ToString("000") & "?" &
-                  "Se restaurara el stock de los productos.",
-                  MsgBoxStyle.YesNo Or MsgBoxStyle.Exclamation,
-                  "Confirmar cancelacion") <> MsgBoxResult.Yes Then Return
+        If Not ModMensajes.Confirmar(Me, "Confirmar cancelacion",
+                                     "Deseas cancelar la venta V-" & idSeleccionado.ToString("000") & "?" & vbCrLf &
+                                     "Se restaurara el stock de los productos.",
+                                     "Cancelar venta", "Regresar", ModMensajes.TipoAviso.Advertencia) Then Return
 
         Using cn = ObtenerConexion()
             cn.Open()
@@ -278,14 +278,13 @@ Public Class Form8
                 End Using
 
                 trans.Commit()
-                MsgBox("Venta V-" & idSeleccionado.ToString("000") & " cancelada correctamente." &
-                       vbNewLine & "Stock restaurado.", MsgBoxStyle.Information, "Cancelacion exitosa")
+                ModMensajes.Mostrar(Me, "Cancelacion exitosa", "Venta V-" & idSeleccionado.ToString("000") & " cancelada correctamente." & vbCrLf & "Stock restaurado.", ModMensajes.TipoAviso.Exito)
                 ModActualizaciones.NotificarInventarioActualizado()
                 ModActualizaciones.NotificarVentasActualizadas()
 
             Catch ex As Exception
                 trans.Rollback()
-                MsgBox("Error al cancelar la venta: " & ex.Message)
+                ModMensajes.Mostrar(Me, "No se pudo cancelar", "La venta no se cancelo." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
             End Try
         End Using
 

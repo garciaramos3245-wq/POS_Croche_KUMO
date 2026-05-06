@@ -525,11 +525,7 @@ Module ModEstilo
             End Using
         End If
 
-        Dim anterior = frm.Icon
         frm.Icon = CType(_iconoCache.Clone(), Icon)
-        If anterior IsNot Nothing Then
-            anterior.Dispose()
-        End If
     End Sub
 
     Private Function ObtenerColorPanel(nombre As String) As Color

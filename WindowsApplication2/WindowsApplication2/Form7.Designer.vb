@@ -441,7 +441,7 @@
         Me.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.Name = "Form7"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
-        Me.Text = "KUMO | Reporte premium"
+        Me.Text = "KUMO | Reporte"
         Me.gbResumen.ResumeLayout(False)
         Me.pnlIngresos.ResumeLayout(False)
         Me.pnlIngresos.PerformLayout()
@@ -465,7 +465,7 @@
         Me.StartPosition = System.Windows.Forms.FormStartPosition.Manual
         Me.ClientSize = New System.Drawing.Size(1536, 864)
         Me.BackColor = System.Drawing.Color.FromArgb(244, 240, 234)
-        Me.Text = "KUMO | Reporte premium"
+        Me.Text = "KUMO | Reporte"
         Me.btnHoy.SetBounds(392, 18, 84, 40)
         Me.btnHoy.BackColor = System.Drawing.Color.FromArgb(247, 241, 232)
         Me.btnHoy.ForeColor = System.Drawing.Color.FromArgb(76, 66, 55)
