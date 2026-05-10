@@ -1,27 +1,49 @@
+' Archivo: Form6.vb.
+' Genera, muestra e imprime tickets de venta.
+
 Imports System.Data.SqlClient
 Imports System.Drawing.Printing
 
 Public Class Form6
 
+    ' Documentacion: Modelos internos, folio activo y paleta visual del ticket.
+
     Private idVenta As Integer
+    ' Documentacion: Modelo de una linea del ticket con producto, cantidad e importe.
     Private Class TicketDetalle
+        ' Documentacion: Nombre del producto mostrado en el ticket.
         Public Property Nombre As String
+        ' Documentacion: Cantidad de piezas vendidas en la linea del ticket.
         Public Property Cantidad As Integer
+        ' Documentacion: Subtotal calculado antes de descuentos o como importe de linea.
         Public Property Subtotal As Decimal
     End Class
 
+    ' Documentacion: Modelo completo del ticket con folio, fecha, totales, pago y detalle.
     Private Class TicketData
+        ' Documentacion: Folio visible del ticket.
         Public Property Numero As String
+        ' Documentacion: Fecha y hora en texto para mostrar o imprimir.
         Public Property Fecha As String
+        ' Documentacion: Subtotal calculado antes de descuentos o como importe de linea.
         Public Property Subtotal As Decimal
+        ' Documentacion: Descuento total aplicado a la venta.
         Public Property Descuento As Decimal
+        ' Documentacion: Importe usado para calcular impuestos.
         Public Property BaseGravable As Decimal
+        ' Documentacion: Monto de IVA calculado o guardado.
         Public Property IVA As Decimal
+        ' Documentacion: Porcentaje de IVA usado en la venta.
         Public Property TasaIVA As Decimal
+        ' Documentacion: Total final cobrado al cliente.
         Public Property Total As Decimal
+        ' Documentacion: Forma de pago usada en la venta.
         Public Property MetodoPago As String
+        ' Documentacion: Monto recibido o registrado como pago.
         Public Property PagoCon As Decimal
+        ' Documentacion: Cambio entregado al cliente.
         Public Property Cambio As Decimal
+        ' Documentacion: Lista de productos incluidos en el ticket.
         Public Property Detalles As List(Of TicketDetalle)
     End Class
 
@@ -32,6 +54,7 @@ Public Class Form6
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
     Private ReadOnly CLR_ACCENT_PREMIUM As Color = Color.FromArgb(181, 138, 92)
 
+    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New(Optional id As Integer = 0)
         InitializeComponent()
         idVenta = id
@@ -45,12 +68,14 @@ Public Class Form6
             End Sub)
     End Sub
 
+    ' Documentacion: Prepara la ventana de ticket y genera la vista previa.
     Private Sub Form6_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
         AplicarDisenoTicket("Ticket de Venta - V-" & idVenta.ToString("000"))
         GenerarTicket()
     End Sub
 
+    ' Documentacion: Aplica estilo visual a encabezado, vista previa, botones y layout.
     Private Sub AplicarDisenoTicket(tituloVentana As String)
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarBotonPrimario(btnImprimir)
@@ -83,6 +108,7 @@ Public Class Form6
         ConfigurarLayoutTicket()
     End Sub
 
+    ' Documentacion: Crea o reutiliza el logo del encabezado y lo carga desde Assets.
     Private Sub InsertarLogoHeader()
         Dim pic = TryCast(pnlHeader.Controls("picTicketLogo"), PictureBox)
         If pic Is Nothing Then
@@ -97,6 +123,7 @@ Public Class Form6
         lblTitulo.Left = 92
     End Sub
 
+    ' Documentacion: Obtiene los datos del ticket y los pinta en pantalla.
     Private Sub GenerarTicket()
         Try
             Dim datos = ObtenerDatosTicket(idVenta)
@@ -107,6 +134,7 @@ Public Class Form6
         End Try
     End Sub
 
+    ' Documentacion: Consulta venta y detalle, corrige valores faltantes y arma el modelo del ticket.
     Private Shared Function ObtenerDatosTicket(idVenta As Integer) As TicketData
         AsegurarColumnasPagoPedido()
 
@@ -188,6 +216,7 @@ Public Class Form6
         Return datos
     End Function
 
+    ' Documentacion: Construye el texto plano del ticket para imprimirlo.
     Public Shared Function ObtenerTextoTicket(idVenta As Integer) As String
         Dim datos = ObtenerDatosTicket(idVenta)
         Dim sb As New System.Text.StringBuilder
@@ -226,11 +255,13 @@ Public Class Form6
         Return sb.ToString()
     End Function
 
+    ' Documentacion: Alinea etiqueta e importe dentro del ancho del ticket.
     Private Shared Function FormatearLineaTicket(etiqueta As String, monto As Decimal, Optional prefijo As String = "$") As String
         Dim textoMonto As String = prefijo & monto.ToString("N2")
         Return etiqueta.PadRight(20) & textoMonto.PadLeft(12)
     End Function
 
+    ' Documentacion: Valida impresora, arma el PrintDocument y abre vista previa.
     Public Shared Function MostrarVistaPreviaTicket(texto As String,
                                                     owner As IWin32Window,
                                                     Optional titulo As String = "Ticket de venta") As Boolean
@@ -298,12 +329,14 @@ Public Class Form6
         Return False
     End Function
 
+    ' Documentacion: Muestra folio, fecha y total en la cabecera de la vista previa.
     Private Sub PintarMetaTicket(datos As TicketData)
         lblTicketNumero.Text = datos.Numero
         lblTicketFecha.Text = datos.Fecha
         lblTicketTotal.Text = "$" & datos.Total.ToString("N2")
     End Sub
 
+    ' Documentacion: Dibuja el ticket con formato enriquecido dentro del RichTextBox.
     Private Sub RenderizarTicket(datos As TicketData)
         rtb.Clear()
         rtb.SuspendLayout()
@@ -366,6 +399,7 @@ Public Class Form6
         rtb.ResumeLayout()
     End Sub
 
+    ' Documentacion: Agrega texto al RichTextBox con fuente, color y alineacion indicados.
     Private Sub AppendTexto(texto As String,
                             fuente As Font,
                             color As Color,
@@ -378,6 +412,7 @@ Public Class Form6
         rtb.AppendText(texto)
     End Sub
 
+    ' Documentacion: Exporta el reporte diario a Excel.
     Private Sub btnImprimir_Click(sender As Object, e As EventArgs) Handles btnImprimir.Click
         Dim texto As String = rtb.Text
         If idVenta > 0 Then texto = ObtenerTextoTicket(idVenta)
@@ -385,10 +420,12 @@ Public Class Form6
         MostrarVistaPreviaTicket(texto, Me, "Ticket de venta V-" & idVenta.ToString("000"))
     End Sub
 
+    ' Documentacion: Cierra la ventana del ticket.
     Private Sub btnCerrar_Click(sender As Object, e As EventArgs) Handles btnCerrar.Click
         Me.Close()
     End Sub
 
+    ' Documentacion: Acomoda tarjeta de vista previa y botones del ticket.
     Private Sub ConfigurarLayoutTicket()
         Dim margen As Integer = 24
         Dim anchoCard As Integer = Math.Min(620, Me.ClientSize.Width - (margen * 2))
@@ -417,6 +454,7 @@ Public Class Form6
         btnCerrar.Anchor = AnchorStyles.None
     End Sub
 
+    ' Documentacion: Reacomoda la vista del ticket al cambiar tamano.
     Private Sub Form6_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return

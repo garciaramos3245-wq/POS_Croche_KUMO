@@ -1,7 +1,11 @@
-Imports System.Runtime.InteropServices
+' Archivo: Form8.vb.
+' Cancela ventas existentes y restaura el stock de los productos vendidos.
+
 Imports System.Data.SqlClient
 
 Public Class Form8
+
+    ' Documentacion: Folio seleccionado y paleta visual de cancelaciones.
 
     Private idSeleccionado As Integer = 0
     Private ReadOnly CLR_BG_PREMIUM As Color = Color.FromArgb(244, 240, 234)
@@ -11,6 +15,7 @@ Public Class Form8
     Private ReadOnly CLR_MUTED_PREMIUM As Color = Color.FromArgb(136, 118, 94)
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
 
+    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
@@ -23,17 +28,7 @@ Public Class Form8
             End Sub)
     End Sub
 
-    <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
-    Private Shared Function CreateRoundRectRgn(
-        ByVal nLeftRect As Integer,
-        ByVal nTopRect As Integer,
-        ByVal nRightRect As Integer,
-        ByVal nBottomRect As Integer,
-        ByVal nWidthEllipse As Integer,
-        ByVal nHeightEllipse As Integer
-    ) As IntPtr
-    End Function
-
+    ' Documentacion: Prepara la pantalla de cancelaciones y carga ventas del dia.
     Private Sub Form8_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
         AddHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
@@ -46,6 +41,7 @@ Public Class Form8
         End Try
     End Sub
 
+    ' Documentacion: Aplica estilos y layout de cancelaciones.
     Private Sub AplicarDisenoCancelaciones()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
@@ -57,6 +53,7 @@ Public Class Form8
         ConfigurarLayoutCancelaciones()
     End Sub
 
+    ' Documentacion: Configura colores, textos, tablas y botones de cancelacion.
     Private Sub AplicarEstiloCancelacionesPremium()
         Me.BackColor = CLR_BG_PREMIUM
         Me.Text = "KUMO | Cancelaciones"
@@ -126,6 +123,7 @@ Public Class Form8
         Next
     End Sub
 
+    ' Documentacion: Acomoda filtros, ventas, detalle y bloque de accion.
     Private Sub ConfigurarLayoutCancelaciones()
         Dim margen As Integer = 18
         Dim top As Integer = 24
@@ -164,15 +162,18 @@ Public Class Form8
         btnRegresar.Anchor = AnchorStyles.Top Or AnchorStyles.Right
     End Sub
 
+    ' Documentacion: Carga ventas para la fecha seleccionada.
     Private Sub btnBuscar_Click(sender As Object, e As EventArgs) Handles btnBuscar.Click
         CargarVentas()
     End Sub
 
+    ' Documentacion: Regresa la fecha a hoy y recarga ventas.
     Private Sub btnHoy_Click(sender As Object, e As EventArgs) Handles btnHoy.Click
         dtpFecha.Value = Today
         CargarVentas()
     End Sub
 
+    ' Documentacion: Carga ventas de la fecha seleccionada para poder cancelarlas.
     Private Sub CargarVentas()
         Dim fecha As Date = dtpFecha.Value.Date
         Using cn = ObtenerConexion()
@@ -197,12 +198,14 @@ Public Class Form8
         End Using
     End Sub
 
+    ' Documentacion: Guarda el folio seleccionado y carga sus productos.
     Private Sub dgvVentas_SelectionChanged(sender As Object, e As EventArgs) Handles dgvVentas.SelectionChanged
         If dgvVentas.CurrentRow Is Nothing Then Return
         idSeleccionado = CInt(dgvVentas.CurrentRow.Cells("N Venta").Value)
         CargarDetalle(idSeleccionado)
     End Sub
 
+    ' Documentacion: Consulta el detalle de productos de la venta seleccionada.
     Private Sub CargarDetalle(id As Integer)
         Using cn = ObtenerConexion()
             Try
@@ -225,6 +228,7 @@ Public Class Form8
         End Using
     End Sub
 
+    ' Documentacion: Confirma cancelacion, restaura stock y elimina venta y detalle en transaccion.
     Private Sub btnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click
         If idSeleccionado = 0 Then
             ModMensajes.Mostrar(Me, "Selecciona una venta", "Elige una venta de la lista antes de cancelarla.", ModMensajes.TipoAviso.Advertencia)
@@ -293,19 +297,23 @@ Public Class Form8
         dgvDetalle.DataSource = Nothing
     End Sub
 
+    ' Documentacion: Cierra el formulario actual.
     Private Sub btnRegresar_Click(sender As Object, e As EventArgs) Handles btnRegresar.Click
         Me.Close()
     End Sub
 
+    ' Documentacion: Vuelve a cargar ventas cuando otro modulo registra cambios.
     Private Sub RefrescarVentas()
         If Me.IsDisposed Then Return
         CargarVentas()
     End Sub
 
+    ' Documentacion: Quita la suscripcion al evento de ventas al cerrar.
     Private Sub Form8_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
     End Sub
 
+    ' Documentacion: Reacomoda cancelaciones al cambiar el tamano.
     Private Sub Form8_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return

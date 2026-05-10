@@ -1,7 +1,11 @@
-Imports System.Runtime.InteropServices
+' Archivo: Form5.vb.
+' Administra pedidos especiales y su informacion de cliente, entrega, saldo y estado.
+
 Imports System.Data.SqlClient
 
 Public Class Form5
+
+    ' Documentacion: Paleta visual y folio seleccionado para editar pedidos.
 
     Private ReadOnly CLR_BG_PREMIUM As Color = Color.FromArgb(244, 240, 234)
     Private ReadOnly CLR_SURFACE_PREMIUM As Color = Color.FromArgb(255, 252, 247)
@@ -10,6 +14,7 @@ Public Class Form5
     Private ReadOnly CLR_MUTED_PREMIUM As Color = Color.FromArgb(136, 118, 94)
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
 
+    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
@@ -26,17 +31,7 @@ Public Class Form5
 
     Private idSeleccionado As Integer = 0
 
-    <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
-    Private Shared Function CreateRoundRectRgn(
-        ByVal nLeftRect As Integer,
-        ByVal nTopRect As Integer,
-        ByVal nRightRect As Integer,
-        ByVal nBottomRect As Integer,
-        ByVal nWidthEllipse As Integer,
-        ByVal nHeightEllipse As Integer
-    ) As IntPtr
-    End Function
-
+    ' Documentacion: Prepara la ventana, escucha cambios de pedidos y carga la agenda.
     Private Sub Form5_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
         AddHandler ModActualizaciones.PedidosActualizados, AddressOf RefrescarPedidos
@@ -45,6 +40,7 @@ Public Class Form5
         AplicarDisenoPedidos()
     End Sub
 
+    ' Documentacion: Aplica estilos y layout al formulario de pedidos.
     Private Sub AplicarDisenoPedidos()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
@@ -57,6 +53,7 @@ Public Class Form5
         ConfigurarLayoutPedidos()
     End Sub
 
+    ' Documentacion: Configura textos, colores, campos, tabla y botones de pedidos.
     Private Sub AplicarEstiloPedidosPremium()
         Me.BackColor = CLR_BG_PREMIUM
         Me.Text = "KUMO | Pedidos"
@@ -143,6 +140,7 @@ Public Class Form5
         btnRegresar.FlatAppearance.MouseOverBackColor = Color.FromArgb(57, 64, 73)
     End Sub
 
+    ' Documentacion: Acomoda formulario de pedido y lista segun el tamano disponible.
     Private Sub ConfigurarLayoutPedidos()
         Dim margen As Integer = 18
         Dim top As Integer = 14
@@ -209,14 +207,17 @@ Public Class Form5
         btnRegresar.Anchor = AnchorStyles.Top Or AnchorStyles.Right
     End Sub
 
+    ' Documentacion: Actualiza el saldo cuando cambia el precio final.
     Private Sub txtPrecio_TextChanged(sender As Object, e As EventArgs) Handles txtPrecio.TextChanged
         CalcSaldo()
     End Sub
 
+    ' Documentacion: Actualiza el saldo cuando cambia el anticipo.
     Private Sub txtAnticipo_TextChanged(sender As Object, e As EventArgs) Handles txtAnticipo.TextChanged
         CalcSaldo()
     End Sub
 
+    ' Documentacion: Calcula saldo pendiente restando anticipo al precio.
     Private Sub CalcSaldo()
         Dim p As Decimal = 0D
         Dim a As Decimal = 0D
@@ -225,6 +226,7 @@ Public Class Form5
         txtSaldo.Text = (p - a).ToString("N2")
     End Sub
 
+    ' Documentacion: Carga la agenda de pedidos desde PEDIDOS y CLIENTES.
     Private Sub CargarPedidos()
         Try
             Dim dt = ObtenerTabla(
@@ -244,14 +246,17 @@ Public Class Form5
         End Try
     End Sub
 
+    ' Documentacion: Carga el detalle del pedido con doble clic en la tabla.
     Private Sub dgv_DoubleClick(sender As Object, e As EventArgs) Handles dgv.DoubleClick
         CargarDetalle()
     End Sub
 
+    ' Documentacion: Carga el detalle del pedido seleccionado.
     Private Sub btnCargar_Click(sender As Object, e As EventArgs) Handles btnCargar.Click
         CargarDetalle()
     End Sub
 
+    ' Documentacion: Consulta el detalle de productos de la venta seleccionada.
     Private Sub CargarDetalle()
         If dgv.CurrentRow Is Nothing Then Return
         idSeleccionado = CInt(dgv.CurrentRow.Cells("ID_Pedido").Value)
@@ -292,6 +297,7 @@ Public Class Form5
         End Try
     End Sub
 
+    ' Documentacion: Limpia la ficha para capturar un producto nuevo.
     Private Sub btnNuevo_Click(sender As Object, e As EventArgs) Handles btnNuevo.Click
         idSeleccionado = 0
         txtNombre.Clear()
@@ -309,6 +315,7 @@ Public Class Form5
         txtNombre.Focus()
     End Sub
 
+    ' Documentacion: Normaliza el estado o metodo guardado para el pedido.
     Private Function ObtenerMetodoPedido() As String
         Dim metodo As String = cbEstado.Text.Trim()
         If metodo = "" Then metodo = "Pendiente"
@@ -316,6 +323,7 @@ Public Class Form5
         Return metodo
     End Function
 
+    ' Documentacion: Valida y guarda un producto nuevo o actualiza uno existente junto con su stock.
     Private Sub btnGuardar_Click(sender As Object, e As EventArgs) Handles btnGuardar.Click
         If txtNombre.Text.Trim() = "" Then
             ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el nombre del cliente antes de guardar.", ModMensajes.TipoAviso.Advertencia)
@@ -374,6 +382,7 @@ Public Class Form5
         btnNuevo_Click(Nothing, Nothing)
     End Sub
 
+    ' Documentacion: Confirma y elimina el producto seleccionado junto con su inventario.
     Private Sub btnEliminar_Click(sender As Object, e As EventArgs) Handles btnEliminar.Click
         If idSeleccionado = 0 Then
             ModMensajes.Mostrar(Me, "Selecciona un pedido", "Elige un pedido de la lista antes de eliminarlo.", ModMensajes.TipoAviso.Advertencia)
@@ -400,19 +409,23 @@ Public Class Form5
         btnNuevo_Click(Nothing, Nothing)
     End Sub
 
+    ' Documentacion: Cierra el formulario actual.
     Private Sub btnRegresar_Click(sender As Object, e As EventArgs) Handles btnRegresar.Click
         Me.Close()
     End Sub
 
+    ' Documentacion: Recarga pedidos despues de cambios externos.
     Private Sub RefrescarPedidos()
         If Me.IsDisposed Then Return
         CargarPedidos()
     End Sub
 
+    ' Documentacion: Quita la suscripcion al evento de pedidos al cerrar.
     Private Sub Form5_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.PedidosActualizados, AddressOf RefrescarPedidos
     End Sub
 
+    ' Documentacion: Reacomoda pedidos al cambiar el tamano.
     Private Sub Form5_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return

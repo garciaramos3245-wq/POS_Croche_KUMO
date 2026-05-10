@@ -1,4 +1,6 @@
-Imports System.Runtime.InteropServices
+' Archivo: Form7.vb.
+' Genera reportes diarios y exporta la informacion a un archivo Excel.
+
 Imports System.Data.SqlClient
 Imports System.Globalization
 Imports System.IO
@@ -6,6 +8,8 @@ Imports System.IO.Compression
 Imports System.Text
 
 Public Class Form7
+
+    ' Documentacion: Estado de carga, controles dinamicos y estilos usados para reportes y Excel.
 
     Private _cargandoReporte As Boolean
     Private gbDetalleVenta As GroupBox
@@ -19,21 +23,36 @@ Public Class Form7
     Private ReadOnly CLR_MUTED_PREMIUM As Color = Color.FromArgb(136, 118, 94)
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
 
+    ' Documentacion: Estilo base de celda sin formato especial.
     Private Const EST_NORMAL As Integer = 0
+    ' Documentacion: Estilo para titulos principales de las hojas Excel.
     Private Const EST_TITULO As Integer = 1
+    ' Documentacion: Estilo para encabezados de tablas Excel.
     Private Const EST_ENCABEZADO As Integer = 2
+    ' Documentacion: Estilo de moneda para filas normales.
     Private Const EST_DINERO As Integer = 3
+    ' Documentacion: Estilo de texto para filas normales.
     Private Const EST_TEXTO As Integer = 4
+    ' Documentacion: Estilo de texto para filas alternas.
     Private Const EST_TEXTO_ALTERNO As Integer = 5
+    ' Documentacion: Estilo de moneda para filas alternas.
     Private Const EST_DINERO_ALTERNO As Integer = 6
+    ' Documentacion: Estilo de etiquetas dentro del resumen ejecutivo.
     Private Const EST_ETIQUETA_RESUMEN As Integer = 7
+    ' Documentacion: Estilo de valores numericos del resumen ejecutivo.
     Private Const EST_VALOR_RESUMEN As Integer = 8
+    ' Documentacion: Estilo de valores de dinero del resumen ejecutivo.
     Private Const EST_DINERO_RESUMEN As Integer = 9
+    ' Documentacion: Estilo para subtitulos y notas de contexto.
     Private Const EST_SUBTITULO As Integer = 10
+    ' Documentacion: Estilo numerico para filas normales.
     Private Const EST_NUMERO As Integer = 11
+    ' Documentacion: Estilo numerico para filas alternas.
     Private Const EST_NUMERO_ALTERNO As Integer = 12
+    ' Documentacion: Estilo para mensajes o notas dentro de Excel.
     Private Const EST_NOTA As Integer = 13
 
+    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
@@ -46,17 +65,7 @@ Public Class Form7
             End Sub)
     End Sub
 
-    <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
-    Private Shared Function CreateRoundRectRgn(
-        ByVal nLeftRect As Integer,
-        ByVal nTopRect As Integer,
-        ByVal nRightRect As Integer,
-        ByVal nBottomRect As Integer,
-        ByVal nWidthEllipse As Integer,
-        ByVal nHeightEllipse As Integer
-    ) As IntPtr
-    End Function
-
+    ' Documentacion: Prepara la pantalla de reporte y carga los datos de hoy.
     Private Sub Form7_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
         AddHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarReporte
@@ -69,6 +78,7 @@ Public Class Form7
         End Try
     End Sub
 
+    ' Documentacion: Aplica estilos generales, botones y layout del reporte.
     Private Sub AplicarDisenoReporte()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
@@ -80,10 +90,12 @@ Public Class Form7
         ConfigurarLayoutReporte()
     End Sub
 
+    ' Documentacion: Inicia la carga asincrona del reporte.
     Private Async Sub IniciarCargaReporte()
         Await CargarReporteAsync()
     End Sub
 
+    ' Documentacion: Configura colores, textos, tablas y tarjetas del reporte.
     Private Sub AplicarEstiloReportePremium()
         Me.BackColor = CLR_BG_PREMIUM
         Me.Text = "KUMO | Reporte"
@@ -190,6 +202,7 @@ Public Class Form7
         Next
     End Sub
 
+    ' Documentacion: Crea el bloque dinamico donde se muestra el detalle de una venta.
     Private Sub InicializarDetalleVenta()
         If gbDetalleVenta IsNot Nothing Then Return
 
@@ -211,6 +224,7 @@ Public Class Form7
         Me.Controls.Add(gbDetalleVenta)
     End Sub
 
+    ' Documentacion: Distribuye filtros, resumen, ventas, top productos y detalle.
     Private Sub ConfigurarLayoutReporte()
         Dim margen As Integer = 18
         Dim top As Integer = 14
@@ -264,6 +278,7 @@ Public Class Form7
         btnRegresar.Anchor = AnchorStyles.Top Or AnchorStyles.Right
     End Sub
 
+    ' Documentacion: Acomoda titulo, valor y subtitulo dentro de una tarjeta del reporte.
     Private Sub PosicionarPanelResumen(panel As Panel, titulo As Label, valor As Label, subtitulo As Label)
         Dim pad As Integer = 14
         titulo.AutoSize = False
@@ -275,15 +290,18 @@ Public Class Form7
         subtitulo.SetBounds(pad, panel.Height - 32, panel.Width - (pad * 2), 20)
     End Sub
 
+    ' Documentacion: Carga el reporte para la fecha seleccionada.
     Private Async Sub btnVer_Click(sender As Object, e As EventArgs) Handles btnVer.Click
         Await CargarReporteAsync()
     End Sub
 
+    ' Documentacion: Regresa la fecha a hoy y recarga ventas.
     Private Async Sub btnHoy_Click(sender As Object, e As EventArgs) Handles btnHoy.Click
         dtpFecha.Value = Today
         Await CargarReporteAsync()
     End Sub
 
+    ' Documentacion: Consulta ventas, resumen, articulos y top productos del dia.
     Private Async Function CargarReporteAsync() As Task
         If _cargandoReporte Then Return
         _cargandoReporte = True
@@ -354,17 +372,20 @@ Public Class Form7
         End Try
     End Function
 
+    ' Documentacion: Aplica formato de moneda a columnas de importes.
     Private Sub FormatearColumnasVentas()
         For Each nombre As String In New String() {"Subtotal", "Descuento", "IVA", "Total", "Pago", "Cambio"}
             If dgvVentas.Columns.Contains(nombre) Then dgvVentas.Columns(nombre).DefaultCellStyle.Format = "C2"
         Next
     End Sub
 
+    ' Documentacion: Guarda el folio seleccionado y carga sus productos.
     Private Sub dgvVentas_SelectionChanged(sender As Object, e As EventArgs) Handles dgvVentas.SelectionChanged
         If _cargandoReporte Then Return
         CargarDetalleVentaSeleccionada()
     End Sub
 
+    ' Documentacion: Obtiene el folio seleccionado y carga su detalle.
     Private Sub CargarDetalleVentaSeleccionada()
         If dgvVentas.CurrentRow Is Nothing Then
             LimpiarDetalleVenta()
@@ -380,6 +401,7 @@ Public Class Form7
         CargarDetalleVenta(id)
     End Sub
 
+    ' Documentacion: Consulta datos de pago y productos de una venta concreta.
     Private Sub CargarDetalleVenta(id As Integer)
         Try
             Dim venta = ObtenerTabla(
@@ -414,11 +436,13 @@ Public Class Form7
         End Try
     End Sub
 
+    ' Documentacion: Limpia la tabla y mensaje de detalle cuando no hay venta seleccionada.
     Private Sub LimpiarDetalleVenta()
         If dgvDetalleVenta IsNot Nothing Then dgvDetalleVenta.DataSource = Nothing
         If lblDetalleResumen IsNot Nothing Then lblDetalleResumen.Text = "Selecciona una venta para ver sus productos."
     End Sub
 
+    ' Documentacion: Activa o desactiva botones y cursor mientras se cargan datos.
     Private Sub CambiarEstadoCarga(cargando As Boolean)
         btnVer.Enabled = Not cargando
         btnHoy.Enabled = Not cargando
@@ -427,10 +451,12 @@ Public Class Form7
         sbInfo.Text = If(cargando, "  Cargando reporte...", sbInfo.Text)
     End Sub
 
+    ' Documentacion: Exporta el reporte diario a Excel.
     Private Sub btnImprimir_Click(sender As Object, e As EventArgs) Handles btnImprimir.Click
         ExportarReporteExcel()
     End Sub
 
+    ' Documentacion: Muestra el selector de archivo y controla la exportacion del reporte.
     Private Sub ExportarReporteExcel()
         If _cargandoReporte Then
             ModMensajes.Mostrar(Me, "Reporte en carga", "Espera a que termine de cargar el reporte antes de exportarlo.", ModMensajes.TipoAviso.Advertencia)
@@ -454,6 +480,7 @@ Public Class Form7
         End Using
     End Sub
 
+    ' Documentacion: Crea un archivo XLSX como paquete ZIP con hojas XML internas.
     Private Sub CrearArchivoExcel(ruta As String)
         If File.Exists(ruta) Then File.Delete(ruta)
 
@@ -473,6 +500,7 @@ Public Class Form7
         End Using
     End Sub
 
+    ' Documentacion: Consulta el detalle de productos vendidos por ticket para el reporte.
     Private Function ObtenerDetalleVentasReporte() As DataTable
         Return ObtenerTabla(
             "SELECT pd.Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(pd.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
@@ -486,6 +514,7 @@ Public Class Form7
             New SqlParameter("@fecha", dtpFecha.Value.Date))
     End Function
 
+    ' Documentacion: Resume ventas, total, pago y cambio por metodo de pago.
     Private Function ObtenerMetodosPagoReporte() As DataTable
         Return ObtenerTabla(
             "SELECT ISNULL(MetodoPago, 'Efectivo') AS [Metodo de pago], COUNT(*) AS [Ventas], " &
@@ -496,6 +525,7 @@ Public Class Form7
             New SqlParameter("@fecha", dtpFecha.Value.Date))
     End Function
 
+    ' Documentacion: Agrega una entrada de texto UTF-8 dentro del archivo XLSX.
     Private Sub EscribirEntradaZip(zip As ZipArchive, rutaEntrada As String, contenido As String)
         Dim entry = zip.CreateEntry(rutaEntrada)
         Using writer As New StreamWriter(entry.Open(), New UTF8Encoding(False))
@@ -503,6 +533,7 @@ Public Class Form7
         End Using
     End Sub
 
+    ' Documentacion: Devuelve el XML de tipos de contenido requerido por XLSX.
     Private Function ObtenerContentTypesExcel() As String
         Return "<?xml version=""1.0"" encoding=""UTF-8""?>" &
                "<Types xmlns=""http://schemas.openxmlformats.org/package/2006/content-types"">" &
@@ -518,6 +549,7 @@ Public Class Form7
                "</Types>"
     End Function
 
+    ' Documentacion: Devuelve las relaciones raiz del paquete XLSX.
     Private Function ObtenerRelacionesRaizExcel() As String
         Return "<?xml version=""1.0"" encoding=""UTF-8""?>" &
                "<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships"">" &
@@ -525,6 +557,7 @@ Public Class Form7
                "</Relationships>"
     End Function
 
+    ' Documentacion: Devuelve el XML del libro con la lista de hojas.
     Private Function ObtenerWorkbookExcel() As String
         Return "<?xml version=""1.0"" encoding=""UTF-8""?>" &
                "<workbook xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main"" xmlns:r=""http://schemas.openxmlformats.org/officeDocument/2006/relationships"">" &
@@ -539,6 +572,7 @@ Public Class Form7
                "</workbook>"
     End Function
 
+    ' Documentacion: Devuelve las relaciones internas del libro hacia hojas y estilos.
     Private Function ObtenerRelacionesWorkbookExcel() As String
         Return "<?xml version=""1.0"" encoding=""UTF-8""?>" &
                "<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships"">" &
@@ -551,6 +585,7 @@ Public Class Form7
                "</Relationships>"
     End Function
 
+    ' Documentacion: Devuelve el XML de estilos, fuentes, rellenos, bordes y formatos numericos.
     Private Function ObtenerEstilosExcel() As String
         Return "<?xml version=""1.0"" encoding=""UTF-8""?>" &
                "<styleSheet xmlns=""http://schemas.openxmlformats.org/spreadsheetml/2006/main"">" &
@@ -600,6 +635,7 @@ Public Class Form7
                "</styleSheet>"
     End Function
 
+    ' Documentacion: Construye la hoja de resumen ejecutivo del reporte.
     Private Function ConstruirHojaResumenExcel() As String
         Dim sb As New StringBuilder()
         IniciarHojaExcel(sb, New String() {"Indicador", "Valor", "Indicador", "Valor", "Indicador", "Valor"})
@@ -639,6 +675,7 @@ Public Class Form7
         Return sb.ToString()
     End Function
 
+    ' Documentacion: Agrega una fila del directorio de hojas incluidas.
     Private Sub AgregarFilaDirectorioExcel(sb As StringBuilder, rowIndex As Integer, hoja As String, descripcion As String, estilo As Integer)
         AbrirFilaExcel(sb, rowIndex, 20D)
         AgregarCeldaExcel(sb, rowIndex, 1, hoja, estilo)
@@ -646,6 +683,7 @@ Public Class Form7
         CerrarFilaExcel(sb)
     End Sub
 
+    ' Documentacion: Convierte un DataGridView visible en una hoja XML de Excel.
     Private Function ConstruirHojaGridExcel(titulo As String, dgv As DataGridView) As String
         Dim columnas = ObtenerColumnasVisibles(dgv)
         Dim sb As New StringBuilder()
@@ -691,6 +729,7 @@ Public Class Form7
         Return sb.ToString()
     End Function
 
+    ' Documentacion: Convierte un DataTable en una hoja XML de Excel.
     Private Function ConstruirHojaTablaExcel(titulo As String, tabla As DataTable) As String
         Dim sb As New StringBuilder()
         Dim columnas As Integer = If(tabla Is Nothing, 1, Math.Max(1, tabla.Columns.Count))
@@ -742,6 +781,7 @@ Public Class Form7
         Return sb.ToString()
     End Function
 
+    ' Documentacion: Abre el XML de una hoja, define columnas y opcionalmente congela filas.
     Private Sub IniciarHojaExcel(sb As StringBuilder, columnas As Integer)
         Dim nombresColumnas As New List(Of String)()
         For i As Integer = 1 To columnas
@@ -750,6 +790,7 @@ Public Class Form7
         IniciarHojaExcel(sb, nombresColumnas)
     End Sub
 
+    ' Documentacion: Abre el XML de una hoja, define columnas y opcionalmente congela filas.
     Private Sub IniciarHojaExcel(sb As StringBuilder, nombresColumnas As IList(Of String), Optional filaCongelada As Integer = 0)
         Dim totalColumnas As Integer = Math.Max(1, If(nombresColumnas Is Nothing, 0, nombresColumnas.Count))
         sb.AppendLine("<?xml version=""1.0"" encoding=""UTF-8""?>")
@@ -771,6 +812,7 @@ Public Class Form7
         sb.AppendLine("<sheetData>")
     End Sub
 
+    ' Documentacion: Cierra la hoja XML agregando filtros, combinaciones y configuracion de pagina.
     Private Sub FinalizarHojaExcel(sb As StringBuilder, Optional autoFiltro As String = Nothing, Optional celdasCombinadas As IEnumerable(Of String) = Nothing)
         sb.AppendLine("</sheetData>")
         If Not String.IsNullOrWhiteSpace(autoFiltro) Then
@@ -791,6 +833,7 @@ Public Class Form7
         sb.AppendLine("</worksheet>")
     End Sub
 
+    ' Documentacion: Agrega una fila completa con valores y estilo inicial.
     Private Sub AgregarFilaExcel(sb As StringBuilder, rowIndex As Integer, valores As Object(), Optional estiloPrimeraCelda As Integer = 0, Optional altura As Decimal = 0D)
         AbrirFilaExcel(sb, rowIndex, altura)
         For i As Integer = 0 To valores.Length - 1
@@ -799,6 +842,7 @@ Public Class Form7
         CerrarFilaExcel(sb)
     End Sub
 
+    ' Documentacion: Escribe la etiqueta inicial de una fila XML.
     Private Sub AbrirFilaExcel(sb As StringBuilder, rowIndex As Integer, Optional altura As Decimal = 0D)
         sb.Append("<row r=""").Append(rowIndex.ToString(CultureInfo.InvariantCulture)).Append("""")
         If altura > 0D Then
@@ -807,10 +851,12 @@ Public Class Form7
         sb.AppendLine(">")
     End Sub
 
+    ' Documentacion: Escribe la etiqueta final de una fila XML.
     Private Sub CerrarFilaExcel(sb As StringBuilder)
         sb.AppendLine("</row>")
     End Sub
 
+    ' Documentacion: Escribe una celda XML como numero, texto o vacia segun el valor recibido.
     Private Sub AgregarCeldaExcel(sb As StringBuilder, rowIndex As Integer, colIndex As Integer, valor As Object, Optional estilo As Integer = 0)
         Dim referencia As String = ObtenerColumnaExcel(colIndex) & rowIndex.ToString(CultureInfo.InvariantCulture)
         Dim estiloTexto As String = If(estilo > 0, " s=""" & estilo.ToString(CultureInfo.InvariantCulture) & """", "")
@@ -833,6 +879,7 @@ Public Class Form7
         sb.AppendLine("</t></is></c>")
     End Sub
 
+    ' Documentacion: Obtiene las columnas visibles del grid ordenadas por DisplayIndex.
     Private Function ObtenerColumnasVisibles(dgv As DataGridView) As List(Of DataGridViewColumn)
         Dim columnas As New List(Of DataGridViewColumn)()
         For Each col As DataGridViewColumn In dgv.Columns
@@ -842,6 +889,7 @@ Public Class Form7
         Return columnas
     End Function
 
+    ' Documentacion: Convierte un indice numerico en nombre de columna estilo Excel.
     Private Function ObtenerColumnaExcel(indice As Integer) As String
         Dim nombre As String = ""
         Dim n As Integer = indice
@@ -853,6 +901,7 @@ Public Class Form7
         Return nombre
     End Function
 
+    ' Documentacion: Calcula el ancho de columna segun el encabezado.
     Private Function ObtenerAnchoColumnaExcel(nombreColumna As String) As Decimal
         Dim nombre = If(nombreColumna, "").ToLowerInvariant()
 
@@ -867,22 +916,26 @@ Public Class Form7
         Return Math.Min(28D, Math.Max(14D, CDec(nombreColumna.Length + 4)))
     End Function
 
+    ' Documentacion: Elige el estilo de celda segun tipo de dato y fila alterna.
     Private Function ObtenerEstiloDatoExcel(nombreColumna As String, filaAlterna As Boolean) As Integer
         If EsColumnaDinero(nombreColumna) Then Return If(filaAlterna, EST_DINERO_ALTERNO, EST_DINERO)
         If EsColumnaNumerica(nombreColumna) Then Return If(filaAlterna, EST_NUMERO_ALTERNO, EST_NUMERO)
         Return If(filaAlterna, EST_TEXTO_ALTERNO, EST_TEXTO)
     End Function
 
+    ' Documentacion: Detecta columnas que deben usar formato de moneda.
     Private Function EsColumnaDinero(nombreColumna As String) As Boolean
         Dim nombre = nombreColumna.ToLowerInvariant()
         Return nombre.Contains("total") OrElse nombre.Contains("subtotal") OrElse nombre.Contains("descuento") OrElse nombre.Contains("iva") OrElse nombre.Contains("pago") OrElse nombre.Contains("cambio") OrElse nombre.Contains("importe") OrElse nombre.Contains("precio")
     End Function
 
+    ' Documentacion: Detecta columnas que deben usar formato numerico entero.
     Private Function EsColumnaNumerica(nombreColumna As String) As Boolean
         Dim nombre = nombreColumna.ToLowerInvariant()
         Return nombre.Contains("cantidad") OrElse nombre.Contains("unidades") OrElse nombre.Contains("venta") OrElse nombre.Contains("articulo")
     End Function
 
+    ' Documentacion: Convierte texto con signo de moneda a Decimal.
     Private Function ObtenerDecimalDesdeTextoMoneda(texto As String) As Decimal
         Dim limpio As String = If(texto, "").Replace("$", "").Trim()
         Dim valor As Decimal
@@ -891,6 +944,7 @@ Public Class Form7
         Return 0D
     End Function
 
+    ' Documentacion: Convierte texto a entero usando cultura actual o invariante.
     Private Function ObtenerEnteroDesdeTexto(texto As String) As Integer
         Dim valor As Integer
         If Integer.TryParse(If(texto, "").Trim(), NumberStyles.Any, CultureInfo.CurrentCulture, valor) Then Return valor
@@ -898,25 +952,30 @@ Public Class Form7
         Return 0
     End Function
 
+    ' Documentacion: Escapa texto para insertarlo de forma segura en XML.
     Private Function EscapeXml(texto As String) As String
         Dim escapado = System.Security.SecurityElement.Escape(texto)
         If escapado Is Nothing Then Return ""
         Return escapado
     End Function
 
+    ' Documentacion: Cierra el formulario actual.
     Private Sub btnRegresar_Click(sender As Object, e As EventArgs) Handles btnRegresar.Click
         Me.Close()
     End Sub
 
+    ' Documentacion: Recarga el reporte cuando se registran cambios de ventas.
     Private Sub RefrescarReporte()
         If Me.IsDisposed Then Return
         BeginInvoke(New MethodInvoker(AddressOf IniciarCargaReporte))
     End Sub
 
+    ' Documentacion: Quita la suscripcion al evento de ventas al cerrar.
     Private Sub Form7_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarReporte
     End Sub
 
+    ' Documentacion: Reacomoda el reporte al cambiar el tamano.
     Private Sub Form7_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return

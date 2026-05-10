@@ -1,6 +1,11 @@
+' Archivo: Form4.vb.
+' Muestra el historial diario de ventas, resumenes y detalle de tickets.
+
 Imports System.Data.SqlClient
 
 Public Class Form4
+
+    ' Documentacion: Estado de carga, controles dinamicos y paleta visual del historial.
 
     Private _cargandoVentas As Boolean
     Private gbDetalleVenta As GroupBox
@@ -17,6 +22,7 @@ Public Class Form4
     Private ReadOnly CLR_GREEN_PREMIUM As Color = Color.FromArgb(74, 133, 95)
     Private ReadOnly CLR_RED_PREMIUM As Color = Color.FromArgb(154, 73, 64)
 
+    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
@@ -29,6 +35,7 @@ Public Class Form4
             End Sub)
     End Sub
 
+    ' Documentacion: Prepara historial, se suscribe a ventas y arranca la carga del dia.
     Private Sub Form4_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         AddHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
         ModEstilo.PrepararVentana(Me)
@@ -37,15 +44,18 @@ Public Class Form4
         BeginInvoke(New MethodInvoker(AddressOf IniciarCargaVentas))
     End Sub
 
+    ' Documentacion: Prepara el formulario y aplica los estilos del historial.
     Private Sub AplicarDisenoHistorial()
         PrepararFormularioHistorial()
         AplicarEstilo()
     End Sub
 
+    ' Documentacion: Inicia la carga asincrona de ventas.
     Private Async Sub IniciarCargaVentas()
         Await CargarVentasAsync()
     End Sub
 
+    ' Documentacion: Define tamano minimo, color base, titulo y doble buffer.
     Private Sub PrepararFormularioHistorial()
         Me.MinimumSize = New Size(1180, 720)
         Me.BackColor = CLR_BG_PREMIUM
@@ -53,6 +63,7 @@ Public Class Form4
         Me.DoubleBuffered = True
     End Sub
 
+    ' Documentacion: Aplica colores, fuentes, textos, logo y botones de la pantalla de acceso.
     Private Sub AplicarEstilo()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
@@ -123,6 +134,7 @@ Public Class Form4
         ConfigurarLayoutHistorial()
     End Sub
 
+    ' Documentacion: Aplica color, fuente y esquinas redondeadas a un GroupBox.
     Private Sub EstilarGroupBox(gb As GroupBox, titulo As String)
         gb.Text = titulo
         gb.BackColor = CLR_SURFACE_PREMIUM
@@ -131,6 +143,7 @@ Public Class Form4
         gb.Padding = New Padding(8)
     End Sub
 
+    ' Documentacion: Da formato a una tarjeta de resumen de ventas.
     Private Sub EstilarPanelResumen(panel As Panel, titulo As Label, valor As Label, subtitulo As Label, colorValor As Color)
         panel.BackColor = CLR_PANEL_PREMIUM
         panel.BorderStyle = BorderStyle.None
@@ -146,6 +159,7 @@ Public Class Form4
         subtitulo.Font = New Font("Segoe UI", 8.0F, FontStyle.Regular)
     End Sub
 
+    ' Documentacion: Aplica estilo al selector de fecha.
     Private Sub EstilarFecha()
         dtpFecha.Font = New Font("Segoe UI", 9.5F)
         dtpFecha.CalendarForeColor = CLR_TEXT_PREMIUM
@@ -154,6 +168,7 @@ Public Class Form4
         dtpFecha.CalendarTitleForeColor = Color.White
     End Sub
 
+    ' Documentacion: Aplica formato comun a las tablas de ventas y detalle.
     Private Sub EstilarTabla()
         For Each dgv As DataGridView In New DataGridView() {dgvVentas, dgvDetalleVenta}
             If dgv Is Nothing Then Continue For
@@ -186,6 +201,7 @@ Public Class Form4
         Next
     End Sub
 
+    ' Documentacion: Crea el bloque dinamico donde se muestra el detalle de una venta.
     Private Sub InicializarDetalleVenta()
         If gbDetalleVenta IsNot Nothing Then Return
 
@@ -207,6 +223,7 @@ Public Class Form4
         Me.Controls.Add(gbDetalleVenta)
     End Sub
 
+    ' Documentacion: Configura la barra inferior del historial.
     Private Sub EstilarBarraEstado()
         StatusStrip1.BackColor = CLR_DARK_PREMIUM
         StatusStrip1.SizingGrip = False
@@ -214,6 +231,7 @@ Public Class Form4
         sbInfo.Font = New Font("Segoe UI", 8.0F)
     End Sub
 
+    ' Documentacion: Calcula la posicion de filtros, metricas, tablas y botones.
     Private Sub ConfigurarLayoutHistorial()
         Dim margen As Integer = 18
         Dim top As Integer = 24
@@ -267,6 +285,7 @@ Public Class Form4
         btnImprimir.Anchor = AnchorStyles.Left Or AnchorStyles.Bottom
     End Sub
 
+    ' Documentacion: Acomoda titulo, valor y subtitulo dentro de una tarjeta de resumen.
     Private Sub PosicionarContenidoPanelResumen(panel As Panel, titulo As Label, valor As Label, subtitulo As Label)
         Dim pad As Integer = 16
         titulo.AutoSize = False
@@ -278,15 +297,18 @@ Public Class Form4
         subtitulo.SetBounds(pad, panel.Height - 34, panel.Width - (pad * 2), 22)
     End Sub
 
+    ' Documentacion: Carga ventas para la fecha seleccionada.
     Private Async Sub btnBuscar_Click(sender As Object, e As EventArgs) Handles btnBuscar.Click
         Await CargarVentasAsync()
     End Sub
 
+    ' Documentacion: Regresa la fecha a hoy y recarga ventas.
     Private Async Sub btnHoy_Click(sender As Object, e As EventArgs) Handles btnHoy.Click
         dtpFecha.Value = Today
         Await CargarVentasAsync()
     End Sub
 
+    ' Documentacion: Carga ventas, resumen y articulos del dia en segundo plano.
     Private Async Function CargarVentasAsync() As Task
         If _cargandoVentas Then Return
         _cargandoVentas = True
@@ -342,17 +364,20 @@ Public Class Form4
         End Try
     End Function
 
+    ' Documentacion: Aplica formato de moneda a columnas de importes.
     Private Sub FormatearColumnasVentas()
         For Each nombre As String In New String() {"Subtotal", "Descuento", "IVA", "Total"}
             If dgvVentas.Columns.Contains(nombre) Then dgvVentas.Columns(nombre).DefaultCellStyle.Format = "C2"
         Next
     End Sub
 
+    ' Documentacion: Guarda el folio seleccionado y carga sus productos.
     Private Sub dgvVentas_SelectionChanged(sender As Object, e As EventArgs) Handles dgvVentas.SelectionChanged
         If _cargandoVentas Then Return
         CargarDetalleVentaSeleccionada()
     End Sub
 
+    ' Documentacion: Obtiene el folio seleccionado y carga su detalle.
     Private Sub CargarDetalleVentaSeleccionada()
         If dgvVentas.CurrentRow Is Nothing Then
             LimpiarDetalleVenta()
@@ -368,6 +393,7 @@ Public Class Form4
         CargarDetalleVenta(id)
     End Sub
 
+    ' Documentacion: Consulta datos de pago y productos de una venta concreta.
     Private Sub CargarDetalleVenta(id As Integer)
         Try
             Dim venta = ObtenerTabla(
@@ -402,11 +428,13 @@ Public Class Form4
         End Try
     End Sub
 
+    ' Documentacion: Limpia la tabla y mensaje de detalle cuando no hay venta seleccionada.
     Private Sub LimpiarDetalleVenta()
         If dgvDetalleVenta IsNot Nothing Then dgvDetalleVenta.DataSource = Nothing
         If lblDetalleResumen IsNot Nothing Then lblDetalleResumen.Text = "Selecciona una venta para ver sus productos."
     End Sub
 
+    ' Documentacion: Activa o desactiva botones y cursor mientras se cargan datos.
     Private Sub CambiarEstadoCarga(cargando As Boolean)
         btnBuscar.Enabled = Not cargando
         btnHoy.Enabled = Not cargando
@@ -415,6 +443,7 @@ Public Class Form4
         sbInfo.Text = If(cargando, "  Cargando historial...", sbInfo.Text)
     End Sub
 
+    ' Documentacion: Abre el formulario de ticket para la venta seleccionada.
     Private Sub btnTicket_Click(sender As Object, e As EventArgs) Handles btnTicket.Click
         If dgvVentas.CurrentRow Is Nothing Then
             ModMensajes.Mostrar(Me, "Selecciona una venta", "Elige una venta de la lista para abrir su ticket.", ModMensajes.TipoAviso.Advertencia)
@@ -426,6 +455,7 @@ Public Class Form4
         ticket.ShowDialog()
     End Sub
 
+    ' Documentacion: Exporta el reporte diario a Excel.
     Private Sub btnImprimir_Click(sender As Object, e As EventArgs) Handles btnImprimir.Click
         If dgvVentas.CurrentRow Is Nothing Then
             ModMensajes.Mostrar(Me, "Selecciona una venta", "Elige una venta de la lista para imprimir su ticket.", ModMensajes.TipoAviso.Advertencia)
@@ -437,19 +467,23 @@ Public Class Form4
         Form6.MostrarVistaPreviaTicket(texto, Me, "Ticket de venta V-" & id.ToString("000"))
     End Sub
 
+    ' Documentacion: Cierra el formulario actual.
     Private Sub btnRegresar_Click(sender As Object, e As EventArgs) Handles btnRegresar.Click
         Me.Close()
     End Sub
 
+    ' Documentacion: Vuelve a cargar ventas cuando otro modulo registra cambios.
     Private Sub RefrescarVentas()
         If Me.IsDisposed Then Return
         BeginInvoke(New MethodInvoker(AddressOf IniciarCargaVentas))
     End Sub
 
+    ' Documentacion: Quita la suscripcion al evento de ventas al cerrar.
     Private Sub Form4_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
     End Sub
 
+    ' Documentacion: Reacomoda el historial al cambiar el tamano.
     Private Sub Form4_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return

@@ -1,4 +1,9 @@
+' Archivo: Form1.vb.
+' Administra la pantalla de acceso al sistema KUMO.
+
 Public Class Form1
+
+    ' Documentacion: Controles creados por codigo para complementar el login.
 
     Private pnlIntro As Panel
     Private lblIntroEyebrow As Label
@@ -6,6 +11,7 @@ Public Class Form1
     Private lblIntroSub As Label
     Private lblIntroFoot As Label
 
+    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
@@ -17,12 +23,14 @@ Public Class Form1
             End Sub)
     End Sub
 
+    ' Documentacion: Prepara la ventana de login, aplica el diseno y la centra en pantalla.
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me, 28, False)
         AplicarDisenoAcceso()
         CentrarVentanaLogin()
     End Sub
 
+    ' Documentacion: Crea el bloque visual de acceso, aplica estilos y fija el tamano del login.
     Private Sub AplicarDisenoAcceso()
         CrearPanelInformativo()
         AplicarEstilo()
@@ -32,6 +40,7 @@ Public Class Form1
         ConfigurarLayoutAcceso()
     End Sub
 
+    ' Documentacion: Calcula la posicion para mostrar el login al centro del area util.
     Private Sub CentrarVentanaLogin()
         Dim area = Screen.FromControl(Me).WorkingArea
         Me.StartPosition = FormStartPosition.Manual
@@ -40,6 +49,7 @@ Public Class Form1
             area.Top + ((area.Height - Me.Height) \ 2))
     End Sub
 
+    ' Documentacion: Crea el panel informativo lateral usado por el diseno de acceso.
     Private Sub CrearPanelInformativo()
         If pnlIntro IsNot Nothing Then Return
 
@@ -74,6 +84,7 @@ Public Class Form1
         pnlIntro.BringToFront()
     End Sub
 
+    ' Documentacion: Aplica colores, fuentes, textos, logo y botones de la pantalla de acceso.
     Private Sub AplicarEstilo()
         ModEstilo.EstilarControles(Me)
         Me.BackColor = ModEstilo.CLR_BG
@@ -131,6 +142,7 @@ Public Class Form1
         pnlLinea.BackColor = ModEstilo.CLR_ACCENT
     End Sub
 
+    ' Documentacion: Acomoda logo, credenciales y botones dentro de la ventana fija del login.
     Private Sub ConfigurarLayoutAcceso()
         If pnlIntro Is Nothing Then
             CrearPanelInformativo()
@@ -181,12 +193,14 @@ Public Class Form1
         pnlLinea.Anchor = AnchorStyles.None
     End Sub
 
+    ' Documentacion: Reacomoda el login cuando la ventana cambia de tamano.
     Private Sub Form1_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return
         ConfigurarLayoutAcceso()
     End Sub
 
+    ' Documentacion: Valida usuario y contrasena; si son correctos abre el punto de venta.
     Private Sub btnEntrar_Click(sender As Object, e As EventArgs) Handles btnEntrar.Click
         If txtUsuario.Text.Trim() = "admin" AndAlso txtPassword.Text = "1234" Then
             Me.Hide()
@@ -208,6 +222,7 @@ Public Class Form1
         End If
     End Sub
 
+    ' Documentacion: Confirma cancelacion, restaura stock y elimina venta y detalle en transaccion.
     Private Sub btnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click
         Me.Close()
     End Sub
