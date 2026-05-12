@@ -163,7 +163,6 @@
         Me.cbCategoria.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.cbCategoria.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.cbCategoria.ForeColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(79, Byte), Integer), CType(CType(118, Byte), Integer))
-        Me.cbCategoria.Items.AddRange(New Object() {"(Todas)", "Amigurumis", "Accesorios", "Decoracion", "Hilos"})
         Me.cbCategoria.Location = New System.Drawing.Point(420, 22)
         Me.cbCategoria.Name = "cbCategoria"
         Me.cbCategoria.Size = New System.Drawing.Size(172, 28)
@@ -333,7 +332,6 @@
         Me.cbCatDetalle.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.cbCatDetalle.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.cbCatDetalle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(79, Byte), Integer), CType(CType(118, Byte), Integer))
-        Me.cbCatDetalle.Items.AddRange(New Object() {"Amigurumis", "Accesorios", "Decoracion", "Hilos"})
         Me.cbCatDetalle.Location = New System.Drawing.Point(14, 170)
         Me.cbCatDetalle.Name = "cbCatDetalle"
         Me.cbCatDetalle.Size = New System.Drawing.Size(385, 28)

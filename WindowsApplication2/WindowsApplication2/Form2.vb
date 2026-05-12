@@ -41,8 +41,14 @@ Public Class Form2
     Private lblCarritoResumenSub As Label
     Private lblCarritoResumenItems As Label
     Private pnlTotales As Panel
+    Private pnlRecordatorioPedidos As Panel
+    Private lblRecordatorioPedidosTitulo As Label
+    Private lblRecordatorioPedidosDetalle As Label
+    Private tmrOcultarRecordatorioPedidos As Timer
+    Private tmrRevisarRecordatoriosPedidos As Timer
     Private _inicioCorrecto As Boolean
     Private _cargandoDatosPOS As Boolean
+    Private _ultimaClaveRecordatorioPedidos As String = ""
 
     ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
@@ -82,16 +88,19 @@ Public Class Form2
             ModEstilo.PrepararVentana(Me)
             AddHandler ModActualizaciones.InventarioActualizado, AddressOf RefrescarInventario
             AddHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
+            AddHandler ModActualizaciones.PedidosActualizados, AddressOf RefrescarRecordatoriosPedidos
             InicializarComponentesPOS()
 
             InicializarCarrito()
             PrepararVistaInicialPOS()
-            sbFecha.Text = ModEstilo.FormatoFechaHora24(Now)
+            sbFecha.Text = ModEstilo.FormatoDiaFechaHora(Now)
 
             AplicarDisenoPOS()
             RecalcularTotales()
             _inicioCorrecto = True
             BeginInvoke(New MethodInvoker(AddressOf IniciarCargaInicialPOS))
+            BeginInvoke(New MethodInvoker(AddressOf RevisarRecordatoriosPedidos))
+            tmrRevisarRecordatoriosPedidos.Start()
         Catch ex As Exception
             _inicioCorrecto = False
             CargarModoSeguroPOS(ex)
@@ -111,6 +120,7 @@ Public Class Form2
         ModEstilo.EstilarBotonSecundario(btnSalida)
         ModEstilo.EstilarMenuStrip(MenuStrip1)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.ConfigurarRelojStatusStrip(Me, StatusStrip1, "sbFecha")
         AplicarEstiloPOS()
         ConfigurarPantallaPOS()
     End Sub
@@ -213,6 +223,39 @@ Public Class Form2
         pnlTopBar.Controls.Add(lblTopState)
         pnlTopBar.Controls.Add(pnlBadgeProductos)
         pnlTopBar.Controls.Add(pnlBadgeCarrito)
+
+        pnlRecordatorioPedidos = New Panel() With {
+            .Name = "pnlRecordatorioPedidos",
+            .BackColor = Color.FromArgb(255, 252, 247),
+            .Visible = False
+        }
+
+        lblRecordatorioPedidosTitulo = New Label() With {
+            .Name = "lblRecordatorioPedidosTitulo",
+            .AutoSize = False,
+            .Text = "Pedido cercano",
+            .ForeColor = Color.FromArgb(76, 66, 55),
+            .Font = New Font("Segoe UI", 9.5F, FontStyle.Bold),
+            .TextAlign = ContentAlignment.MiddleLeft
+        }
+
+        lblRecordatorioPedidosDetalle = New Label() With {
+            .Name = "lblRecordatorioPedidosDetalle",
+            .AutoSize = False,
+            .ForeColor = Color.FromArgb(120, 104, 85),
+            .Font = New Font("Segoe UI", 8.75F),
+            .TextAlign = ContentAlignment.TopLeft
+        }
+
+        pnlRecordatorioPedidos.Controls.Add(lblRecordatorioPedidosTitulo)
+        pnlRecordatorioPedidos.Controls.Add(lblRecordatorioPedidosDetalle)
+        Me.Controls.Add(pnlRecordatorioPedidos)
+
+        tmrOcultarRecordatorioPedidos = New Timer() With {.Interval = 3000}
+        AddHandler tmrOcultarRecordatorioPedidos.Tick, AddressOf OcultarRecordatorioPedidos
+
+        tmrRevisarRecordatoriosPedidos = New Timer() With {.Interval = 300000}
+        AddHandler tmrRevisarRecordatoriosPedidos.Tick, AddressOf tmrRevisarRecordatoriosPedidos_Tick
 
         pnlCatalogoHero = New Panel() With {.Name = "pnlCatalogoHero"}
         lblCatalogoHeroTitle = New Label() With {.Name = "lblCatalogoHeroTitle", .AutoSize = False, .Text = "Catalogo de venta"}
@@ -489,6 +532,7 @@ Public Class Form2
             ModEstilo.EstilarControles(Me)
             ModEstilo.EstilarMenuStrip(MenuStrip1)
             ModEstilo.EstilarStatusStrip(StatusStrip1)
+            ModEstilo.ConfigurarRelojStatusStrip(Me, StatusStrip1, "sbFecha")
             ConfigurarPantallaPOS()
             RecalcularTotales()
 
@@ -612,7 +656,25 @@ Public Class Form2
         lblSubtotal.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
         lblDescuento.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
 
+        ConfigurarRecordatorioPedidos()
         AplicarCurvasPOS()
+    End Sub
+
+    ' Documentacion: Acomoda el aviso temporal de pedidos cercanos en la esquina superior derecha.
+    Private Sub ConfigurarRecordatorioPedidos()
+        If pnlRecordatorioPedidos Is Nothing Then Return
+
+        Dim ancho As Integer = 360
+        Dim alto As Integer = 92
+        Dim margen As Integer = 24
+        Dim topAviso As Integer = If(MenuStrip1 IsNot Nothing, MenuStrip1.Bottom + 14, 18)
+
+        pnlRecordatorioPedidos.SetBounds(Me.ClientSize.Width - ancho - margen, topAviso, ancho, alto)
+        lblRecordatorioPedidosTitulo.SetBounds(18, 12, ancho - 36, 24)
+        lblRecordatorioPedidosDetalle.SetBounds(18, 39, ancho - 36, 42)
+        pnlRecordatorioPedidos.Anchor = AnchorStyles.Top Or AnchorStyles.Right
+        pnlRecordatorioPedidos.BringToFront()
+        RedondearControl(pnlRecordatorioPedidos, 18)
     End Sub
 
     ' Documentacion: Reacomoda los controles cuando cambia el tamano del formulario.
@@ -636,6 +698,13 @@ Public Class Form2
         CargarProductos()
         FiltrarProductos()
         ActualizarNumVenta()
+    End Sub
+
+    ' Documentacion: Vuelve a revisar pedidos cuando se guardan o eliminan desde la agenda.
+    Private Sub RefrescarRecordatoriosPedidos()
+        If Me.IsDisposed Then Return
+        _ultimaClaveRecordatorioPedidos = ""
+        RevisarRecordatoriosPedidos()
     End Sub
 
     ' Documentacion: Abre el formulario de cancelaciones desde el menu.
@@ -980,7 +1049,84 @@ Public Class Form2
         If lblCarritoResumenItems IsNot Nothing Then lblCarritoResumenItems.Text = articulosEnCarrito.ToString() & " piezas"
         If lblTopState IsNot Nothing Then lblTopState.Text = ModEstilo.FormatoFechaHora24(Now)
         If lblCatalogoHeroHint IsNot Nothing Then lblCatalogoHeroHint.Text = visibles.ToString() & " productos visibles"
-        sbFecha.Text = ModEstilo.FormatoFechaHora24(Now)
+        sbFecha.Text = ModEstilo.FormatoDiaFechaHora(Now)
+    End Sub
+
+    ' Documentacion: Consulta pedidos próximos y muestra un aviso corto si hay entregas cercanas.
+    Private Sub RevisarRecordatoriosPedidos()
+        If Me.IsDisposed OrElse pnlRecordatorioPedidos Is Nothing Then Return
+
+        Try
+            Dim hoy As Date = Today
+            Dim limite As Date = hoy.AddDays(2)
+            Dim tabla = ObtenerTabla(
+                "SELECT TOP 1 p.Id_Pedido, " &
+                "RTRIM(LTRIM(c.Nombres_cl + ' ' + ISNULL(c.Apellidos,''))) AS Cliente, " &
+                "p.Fecha AS Entrega, " &
+                "DATEDIFF(day, @hoy, CAST(p.Fecha AS date)) AS DiasRestantes, " &
+                "COUNT(*) OVER() AS TotalPedidos " &
+                "FROM PEDIDOS p " &
+                "INNER JOIN CLIENTES c ON c.ID_CLIENTE = p.ID_CLIENTE " &
+                "WHERE CAST(p.Fecha AS date) BETWEEN @hoy AND @limite " &
+                "AND NOT EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
+                "AND ISNULL(p.MetodoPago, 'Pendiente') IN ('Pendiente', 'En proceso', 'Listo para entregar') " &
+                "ORDER BY p.Fecha, p.Id_Pedido",
+                New SqlParameter("@hoy", hoy),
+                New SqlParameter("@limite", limite))
+
+            If tabla.Rows.Count = 0 Then Return
+
+            Dim row = tabla.Rows(0)
+            Dim idPedido As Integer = CInt(row("Id_Pedido"))
+            Dim cliente As String = row("Cliente").ToString()
+            Dim diasRestantes As Integer = CInt(row("DiasRestantes"))
+            Dim totalPedidos As Integer = CInt(row("TotalPedidos"))
+            Dim entrega As Date = CDate(row("Entrega"))
+            Dim clave As String = hoy.ToString("yyyyMMdd") & "|" & idPedido.ToString() & "|" & totalPedidos.ToString()
+
+            If clave = _ultimaClaveRecordatorioPedidos Then Return
+            _ultimaClaveRecordatorioPedidos = clave
+
+            MostrarRecordatorioPedidos(idPedido, cliente, entrega, diasRestantes, totalPedidos)
+        Catch
+            ' El aviso no debe interrumpir la venta si la agenda no esta disponible.
+        End Try
+    End Sub
+
+    ' Documentacion: Presenta el aviso visual de pedido cercano durante unos segundos.
+    Private Sub MostrarRecordatorioPedidos(idPedido As Integer, cliente As String, entrega As Date, diasRestantes As Integer, totalPedidos As Integer)
+        If pnlRecordatorioPedidos Is Nothing Then Return
+
+        Dim tiempoEntrega As String
+        If diasRestantes = 0 Then
+            tiempoEntrega = "hoy"
+        ElseIf diasRestantes = 1 Then
+            tiempoEntrega = "manana"
+        Else
+            tiempoEntrega = "en " & diasRestantes.ToString() & " dias"
+        End If
+
+        lblRecordatorioPedidosTitulo.Text = If(totalPedidos = 1, "Pedido cercano", totalPedidos.ToString() & " pedidos cercanos")
+        lblRecordatorioPedidosDetalle.Text =
+            "Pedido #" & idPedido.ToString("000") & " para " & cliente & vbCrLf &
+            "Entrega " & tiempoEntrega & " (" & ModEstilo.FormatoFechaHora24(entrega) & ")"
+
+        ConfigurarRecordatorioPedidos()
+        pnlRecordatorioPedidos.Visible = True
+        pnlRecordatorioPedidos.BringToFront()
+        tmrOcultarRecordatorioPedidos.Stop()
+        tmrOcultarRecordatorioPedidos.Start()
+    End Sub
+
+    ' Documentacion: Oculta el aviso temporal de pedidos.
+    Private Sub OcultarRecordatorioPedidos(sender As Object, e As EventArgs)
+        tmrOcultarRecordatorioPedidos.Stop()
+        If pnlRecordatorioPedidos IsNot Nothing Then pnlRecordatorioPedidos.Visible = False
+    End Sub
+
+    ' Documentacion: Revisa periodicamente pedidos cercanos mientras la caja esta abierta.
+    Private Sub tmrRevisarRecordatoriosPedidos_Tick(sender As Object, e As EventArgs)
+        RevisarRecordatoriosPedidos()
     End Sub
 
     ' Documentacion: Muestra el dialogo de pago y devuelve metodo, pago recibido y cambio.
@@ -1585,12 +1731,13 @@ Public Class Form2
                 Dim idCliente As Integer = ObtenerIdClienteGeneral(trans)
 
                 Using cmdPedido As New SqlCommand(
-                    "INSERT INTO PEDIDOS (ID_CLIENTE, Subtotal, Descuento, BaseGravable, IVA, TasaIVA, Total, MetodoPago, PagoCon, Cambio) " &
-                    "VALUES (@idCliente, @subtotal, @descuento, @baseGravable, @iva, @tasaIva, @total, @metodo, @pagoCon, @cambio); " &
+                    "INSERT INTO PEDIDOS (ID_CLIENTE, Fecha, Subtotal, Descuento, BaseGravable, IVA, TasaIVA, Total, MetodoPago, PagoCon, Cambio, Cancelada) " &
+                    "VALUES (@idCliente, @fecha, @subtotal, @descuento, @baseGravable, @iva, @tasaIva, @total, @metodo, @pagoCon, @cambio, 0); " &
                     "SELECT CAST(SCOPE_IDENTITY() AS INT);",
                     cn,
                     trans)
                     cmdPedido.Parameters.AddWithValue("@idCliente", idCliente)
+                    cmdPedido.Parameters.AddWithValue("@fecha", DateTime.Now)
                     cmdPedido.Parameters.AddWithValue("@subtotal", subtotal)
                     cmdPedido.Parameters.AddWithValue("@descuento", descuento)
                     cmdPedido.Parameters.AddWithValue("@baseGravable", baseGravable)
@@ -1672,6 +1819,9 @@ Public Class Form2
     Private Sub Form2_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.InventarioActualizado, AddressOf RefrescarInventario
         RemoveHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
+        RemoveHandler ModActualizaciones.PedidosActualizados, AddressOf RefrescarRecordatoriosPedidos
+        If tmrOcultarRecordatorioPedidos IsNot Nothing Then tmrOcultarRecordatorioPedidos.Stop()
+        If tmrRevisarRecordatoriosPedidos IsNot Nothing Then tmrRevisarRecordatoriosPedidos.Stop()
     End Sub
 
     ' Documentacion: Obtiene el texto del ticket y abre la vista previa de impresion.

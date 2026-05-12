@@ -225,10 +225,11 @@ Public Class Form4
 
     ' Documentacion: Configura la barra inferior del historial.
     Private Sub EstilarBarraEstado()
-        StatusStrip1.BackColor = CLR_DARK_PREMIUM
+        StatusStrip1.BackColor = ModEstilo.CLR_HEADER
         StatusStrip1.SizingGrip = False
-        sbInfo.ForeColor = Color.FromArgb(244, 226, 193)
+        sbInfo.ForeColor = Color.White
         sbInfo.Font = New Font("Segoe UI", 8.0F)
+        ModEstilo.ConfigurarRelojStatusStrip(Me, StatusStrip1)
     End Sub
 
     ' Documentacion: Calcula la posicion de filtros, metricas, tablas y botones.
@@ -320,17 +321,22 @@ Public Class Form4
 
             Dim ventas = Await Task.Run(Function()
                                             Return ObtenerTabla(
-                                                "SELECT Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-                                                "CONVERT(varchar, Fecha, 103) AS [Fecha], ISNULL(MetodoPago, 'Efectivo') AS [Metodo], " &
-                                                "ISNULL(Subtotal, Total) AS [Subtotal], ISNULL(Descuento, 0) AS [Descuento], ISNULL(IVA, 0) AS [IVA], Total " &
-                                                "FROM PEDIDOS WHERE CAST(Fecha AS DATE) = @fecha ORDER BY Fecha DESC",
+                                                "SELECT p.Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(p.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
+                                                "CONVERT(varchar, p.Fecha, 103) AS [Fecha], ISNULL(p.MetodoPago, 'Efectivo') AS [Metodo], " &
+                                                "ISNULL(p.Subtotal, p.Total) AS [Subtotal], ISNULL(p.Descuento, 0) AS [Descuento], ISNULL(p.IVA, 0) AS [IVA], p.Total, " &
+                                                "CASE WHEN ISNULL(Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado] " &
+                                                "FROM PEDIDOS p " &
+                                                "WHERE CAST(p.Fecha AS DATE) = @fecha " &
+                                                "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
+                                                "ORDER BY p.Fecha DESC",
                                                 New SqlParameter("@fecha", fecha))
                                         End Function)
 
             Dim resumen = Await Task.Run(Function()
-                                             Return ObtenerTabla(
-                                                 "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
-                                                 "FROM PEDIDOS WHERE CAST(Fecha AS DATE) = @fecha",
+                                                 Return ObtenerTabla(
+                                                     "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
+                                                 "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE) = @fecha AND ISNULL(p.Cancelada, 0) = 0 " &
+                                                 "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
                                                  New SqlParameter("@fecha", fecha))
                                          End Function)
 
@@ -338,7 +344,7 @@ Public Class Form4
                                                Return ObtenerEscalar(
                                                    "SELECT ISNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
                                                    "INNER JOIN PEDIDOS p ON p.Id_Pedido = d.Id_Pedido " &
-                                                   "WHERE CAST(p.Fecha AS DATE) = @fecha",
+                                                   "WHERE CAST(p.Fecha AS DATE) = @fecha AND ISNULL(p.Cancelada, 0) = 0",
                                                    New SqlParameter("@fecha", fecha))
                                            End Function)
 
@@ -398,7 +404,9 @@ Public Class Form4
         Try
             Dim venta = ObtenerTabla(
                 "SELECT ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, ISNULL(PagoCon, Total) AS PagoCon, " &
-                "ISNULL(Cambio, 0) AS Cambio, Total FROM PEDIDOS WHERE Id_Pedido = @id",
+                "ISNULL(Cambio, 0) AS Cambio, Total, ISNULL(Cancelada, 0) AS Cancelada, FechaCancelacion " &
+                "FROM PEDIDOS p WHERE p.Id_Pedido = @id " &
+                "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
                 New SqlParameter("@id", id))
 
             Dim detalle = ObtenerTabla(
@@ -415,7 +423,9 @@ Public Class Form4
 
             If venta.Rows.Count > 0 Then
                 Dim row = venta.Rows(0)
+                Dim estado As String = If(CBool(row("Cancelada")), "Cancelada", "Activa")
                 lblDetalleResumen.Text = "Venta V-" & id.ToString("000") &
+                    " | " & estado &
                     " | " & row("MetodoPago").ToString() &
                     " | Total $" & CDec(row("Total")).ToString("N2") &
                     " | Pago $" & CDec(row("PagoCon")).ToString("N2") &

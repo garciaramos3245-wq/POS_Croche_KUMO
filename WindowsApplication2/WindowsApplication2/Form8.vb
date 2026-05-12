@@ -45,6 +45,7 @@ Public Class Form8
     Private Sub AplicarDisenoCancelaciones()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.ConfigurarRelojStatusStrip(Me, StatusStrip1)
         ModEstilo.EstilarBotonPrimario(btnBuscar)
         ModEstilo.EstilarBotonSecundario(btnHoy)
         ModEstilo.EstilarBotonPeligro(btnCancelar)
@@ -178,18 +179,23 @@ Public Class Form8
         Dim fecha As Date = dtpFecha.Value.Date
         Using cn = ObtenerConexion()
             Try
+                AsegurarColumnasPagoPedido()
                 cn.Open()
                 Dim da As New SqlDataAdapter(
                     "SELECT p.Id_Pedido AS [N Venta], " &
                     "LOWER(REPLACE(REPLACE(FORMAT(p.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
                     "CONVERT(varchar,p.Fecha,103) AS [Fecha], " &
-                    "p.Total " &
-                    "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha ORDER BY p.Fecha DESC", cn)
+                    "p.Total, " &
+                    "CASE WHEN ISNULL(p.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS Estado " &
+                    "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha " &
+                    "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
+                    "ORDER BY p.Fecha DESC", cn)
                 da.SelectCommand.Parameters.AddWithValue("@fecha", fecha)
 
                 Dim dt As New DataTable
                 da.Fill(dt)
                 dgvVentas.DataSource = dt
+                If dgvVentas.Columns.Contains("Total") Then dgvVentas.Columns("Total").DefaultCellStyle.Format = "C2"
                 sbInfo.Text = "  Ventas del " & dtpFecha.Value.ToString("dd/MM/yyyy") &
                               "  |  Total registros: " & dt.Rows.Count
             Catch ex As Exception
@@ -228,10 +234,16 @@ Public Class Form8
         End Using
     End Sub
 
-    ' Documentacion: Confirma cancelacion, restaura stock y elimina venta y detalle en transaccion.
+    ' Documentacion: Confirma cancelacion, restaura stock y conserva la venta marcada como cancelada.
     Private Sub btnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click
         If idSeleccionado = 0 Then
             ModMensajes.Mostrar(Me, "Selecciona una venta", "Elige una venta de la lista antes de cancelarla.", ModMensajes.TipoAviso.Advertencia)
+            Return
+        End If
+
+        If dgvVentas.CurrentRow IsNot Nothing AndAlso dgvVentas.Columns.Contains("Estado") AndAlso
+           dgvVentas.CurrentRow.Cells("Estado").Value.ToString() = "Cancelada" Then
+            ModMensajes.Mostrar(Me, "Venta ya cancelada", "La venta V-" & idSeleccionado.ToString("000") & " ya aparece como cancelada.", ModMensajes.TipoAviso.Advertencia)
             Return
         End If
 
@@ -241,10 +253,29 @@ Public Class Form8
                                      "Cancelar venta", "Regresar", ModMensajes.TipoAviso.Advertencia) Then Return
 
         Using cn = ObtenerConexion()
+            AsegurarColumnasPagoPedido()
             cn.Open()
             Dim trans = cn.BeginTransaction()
 
             Try
+                Using cmdEstado As New SqlCommand(
+                    "SELECT ISNULL(Cancelada, 0) FROM PEDIDOS WITH (UPDLOCK, HOLDLOCK) WHERE Id_Pedido = @id",
+                    cn,
+                    trans)
+                    cmdEstado.Parameters.AddWithValue("@id", idSeleccionado)
+                    Dim estado = cmdEstado.ExecuteScalar()
+                    If estado Is Nothing OrElse IsDBNull(estado) Then
+                        Throw New Exception("La venta seleccionada ya no existe.")
+                    End If
+
+                    If CBool(estado) Then
+                        trans.Rollback()
+                        ModMensajes.Mostrar(Me, "Venta ya cancelada", "La venta V-" & idSeleccionado.ToString("000") & " ya estaba cancelada. No se volvio a mover stock.", ModMensajes.TipoAviso.Advertencia)
+                        CargarVentas()
+                        Return
+                    End If
+                End Using
+
                 Dim dtDetalle As New DataTable
                 Using daDetalle As New SqlDataAdapter(
                     "SELECT Id_Producto, Cantidad FROM DET_PEDIDOS WHERE Id_Pedido=@idVenta",
@@ -265,24 +296,18 @@ Public Class Form8
                     End Using
                 Next
 
-                Using ejDet As New SqlCommand(
-                    "DELETE FROM DET_PEDIDOS WHERE Id_Pedido=@id",
-                    cn,
-                    trans)
-                    ejDet.Parameters.AddWithValue("@id", idSeleccionado)
-                    ejDet.ExecuteNonQuery()
-                End Using
-
                 Using ejPedido As New SqlCommand(
-                    "DELETE FROM PEDIDOS WHERE Id_Pedido=@id",
+                    "UPDATE PEDIDOS SET Cancelada = 1, FechaCancelacion = @fechaCancelacion, MotivoCancelacion = @motivo WHERE Id_Pedido=@id",
                     cn,
                     trans)
                     ejPedido.Parameters.AddWithValue("@id", idSeleccionado)
+                    ejPedido.Parameters.AddWithValue("@fechaCancelacion", DateTime.Now)
+                    ejPedido.Parameters.AddWithValue("@motivo", If(String.IsNullOrWhiteSpace(txtMotivo.Text), CType(DBNull.Value, Object), txtMotivo.Text.Trim()))
                     ejPedido.ExecuteNonQuery()
                 End Using
 
                 trans.Commit()
-                ModMensajes.Mostrar(Me, "Cancelacion exitosa", "Venta V-" & idSeleccionado.ToString("000") & " cancelada correctamente." & vbCrLf & "Stock restaurado.", ModMensajes.TipoAviso.Exito)
+                ModMensajes.Mostrar(Me, "Cancelacion exitosa", "Venta V-" & idSeleccionado.ToString("000") & " cancelada correctamente." & vbCrLf & "Stock restaurado y registro conservado.", ModMensajes.TipoAviso.Exito)
                 ModActualizaciones.NotificarInventarioActualizado()
                 ModActualizaciones.NotificarVentasActualizadas()
 

@@ -52,6 +52,9 @@ Module DbKumo
             EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'MetodoPago') IS NULL ALTER TABLE PEDIDOS ADD MetodoPago VARCHAR(30) NULL")
             EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'PagoCon') IS NULL ALTER TABLE PEDIDOS ADD PagoCon DECIMAL(10,2) NULL")
             EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Cambio') IS NULL ALTER TABLE PEDIDOS ADD Cambio DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Cancelada') IS NULL ALTER TABLE PEDIDOS ADD Cancelada BIT NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'FechaCancelacion') IS NULL ALTER TABLE PEDIDOS ADD FechaCancelacion DATETIME NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'MotivoCancelacion') IS NULL ALTER TABLE PEDIDOS ADD MotivoCancelacion NVARCHAR(200) NULL")
             EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Subtotal = ISNULL(Subtotal, Total) WHERE Subtotal IS NULL")
             EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Descuento = ISNULL(Descuento, 0) WHERE Descuento IS NULL")
             EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET IVA = ISNULL(IVA, 0) WHERE IVA IS NULL")
@@ -60,6 +63,22 @@ Module DbKumo
             EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET MetodoPago = ISNULL(NULLIF(MetodoPago, ''), 'Efectivo') WHERE MetodoPago IS NULL OR MetodoPago = ''")
             EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET PagoCon = ISNULL(PagoCon, Total) WHERE PagoCon IS NULL")
             EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Cambio = ISNULL(Cambio, 0) WHERE Cambio IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Cancelada = ISNULL(Cancelada, 0) WHERE Cancelada IS NULL")
+        End Using
+    End Sub
+
+    ' Documentacion: Garantiza que PEDIDOS tenga los campos completos de la ficha de pedido especial.
+    Public Sub AsegurarColumnasDetallePedido()
+        Using cn = ObtenerConexion()
+            cn.Open()
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'DescripcionPedido') IS NULL ALTER TABLE PEDIDOS ADD DescripcionPedido NVARCHAR(MAX) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Colores') IS NULL ALTER TABLE PEDIDOS ADD Colores NVARCHAR(MAX) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Medidas') IS NULL ALTER TABLE PEDIDOS ADD Medidas NVARCHAR(MAX) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Notas') IS NULL ALTER TABLE PEDIDOS ADD Notas NVARCHAR(MAX) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Anticipo') IS NULL ALTER TABLE PEDIDOS ADD Anticipo DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "IF COL_LENGTH('PEDIDOS', 'Saldo') IS NULL ALTER TABLE PEDIDOS ADD Saldo DECIMAL(10,2) NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Anticipo = ISNULL(Anticipo, 0) WHERE Anticipo IS NULL")
+            EjecutarSqlPagoPedido(cn, "UPDATE PEDIDOS SET Saldo = ISNULL(Saldo, ISNULL(Total, 0) - ISNULL(Anticipo, 0)) WHERE Saldo IS NULL")
         End Using
     End Sub
 

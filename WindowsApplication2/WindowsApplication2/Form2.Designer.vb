@@ -186,7 +186,6 @@
         Me.cbCategoria.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.cbCategoria.Font = New System.Drawing.Font("Segoe UI", 9.0!)
         Me.cbCategoria.ForeColor = System.Drawing.Color.FromArgb(CType(CType(52, Byte), Integer), CType(CType(79, Byte), Integer), CType(CType(118, Byte), Integer))
-        Me.cbCategoria.Items.AddRange(New Object() {"(Todas)", "Amigurumis", "Accesorios", "Decoracion", "Hilos"})
         Me.cbCategoria.Location = New System.Drawing.Point(349, 46)
         Me.cbCategoria.Name = "cbCategoria"
         Me.cbCategoria.Size = New System.Drawing.Size(172, 28)

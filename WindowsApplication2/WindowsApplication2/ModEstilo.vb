@@ -3,6 +3,7 @@
 
 Imports System.Drawing
 Imports System.IO
+Imports System.Globalization
 Imports System.Runtime.InteropServices
 Imports System.ComponentModel
 Imports System.Windows.Forms
@@ -32,11 +33,20 @@ Module ModEstilo
     Private _rutaIcono As String = ""
     Private _rutaLogoEvaluada As Boolean = False
     Private _rutaIconoEvaluada As Boolean = False
+    Private ReadOnly _relojesStatus As New Dictionary(Of Form, Timer)
 
     ' Documentacion: Convierte una fecha a texto con dia, mes, anio y hora en formato a.m./p.m.
     Public Function FormatoFechaHora24(valor As DateTime) As String
         Dim sufijo As String = If(valor.Hour < 12, "a.m.", "p.m.")
         Return valor.ToString("dd/MM/yyyy") & "  " & valor.ToString("h:mm") & " " & sufijo
+    End Function
+
+    ' Documentacion: Convierte una fecha a texto con dia, fecha y hora para las barras inferiores.
+    Public Function FormatoDiaFechaHora(valor As DateTime) As String
+        Dim cultura = CultureInfo.GetCultureInfo("es-MX")
+        Dim dia = cultura.TextInfo.ToTitleCase(valor.ToString("dddd", cultura))
+        Dim sufijo As String = If(valor.Hour < 12, "a.m.", "p.m.")
+        Return dia & " " & valor.ToString("dd/MM/yyyy") & " " & valor.ToString("h:mm") & " " & sufijo
     End Function
 
     ' Documentacion: Detecta si el codigo se esta ejecutando dentro del disenador de Visual Studio.
@@ -250,6 +260,61 @@ Module ModEstilo
             item.ForeColor = Color.White
             item.Font = New Font("Segoe UI", 8.0F)
         Next
+    End Sub
+
+    ' Documentacion: Agrega y mantiene actualizado el reloj de dia, fecha y hora en una barra inferior.
+    Public Sub ConfigurarRelojStatusStrip(frm As Form, ss As StatusStrip, Optional nombreEtiqueta As String = "sbFechaKumo")
+        If frm Is Nothing OrElse ss Is Nothing OrElse EstaEnModoDisenio(frm) Then Return
+
+        Dim etiquetaFecha = TryCast(ss.Items(nombreEtiqueta), ToolStripStatusLabel)
+        If etiquetaFecha Is Nothing Then
+            etiquetaFecha = New ToolStripStatusLabel() With {
+                .Name = nombreEtiqueta,
+                .Font = New Font("Segoe UI", 8.0F),
+                .ForeColor = Color.White,
+                .TextAlign = ContentAlignment.MiddleRight
+            }
+            ss.Items.Add(etiquetaFecha)
+        End If
+
+        For Each item As ToolStripItem In ss.Items
+            Dim etiqueta = TryCast(item, ToolStripStatusLabel)
+            If etiqueta IsNot Nothing AndAlso Not Object.ReferenceEquals(etiqueta, etiquetaFecha) Then
+                etiqueta.Spring = True
+                etiqueta.TextAlign = ContentAlignment.MiddleLeft
+                Exit For
+            End If
+        Next
+
+        etiquetaFecha.Spring = False
+        etiquetaFecha.ForeColor = Color.White
+        etiquetaFecha.Text = FormatoDiaFechaHora(DateTime.Now)
+
+        If _relojesStatus.ContainsKey(frm) Then
+            _relojesStatus(frm).Start()
+            Return
+        End If
+
+        Dim reloj As New Timer() With {.Interval = 1000}
+        AddHandler reloj.Tick,
+            Sub()
+                If frm.IsDisposed OrElse ss.IsDisposed OrElse etiquetaFecha Is Nothing Then
+                    reloj.Stop()
+                    Return
+                End If
+
+                etiquetaFecha.Text = FormatoDiaFechaHora(DateTime.Now)
+            End Sub
+
+        AddHandler frm.FormClosed,
+            Sub()
+                If _relojesStatus.ContainsKey(frm) Then _relojesStatus.Remove(frm)
+                reloj.Stop()
+                reloj.Dispose()
+            End Sub
+
+        _relojesStatus(frm) = reloj
+        reloj.Start()
     End Sub
 
     ' Documentacion: Da formato al menu superior y sus subopciones.

@@ -133,6 +133,7 @@ Public Class Form1
         btnCancelar.Text = "Cerrar"
 
         ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.ConfigurarRelojStatusStrip(Me, StatusStrip1)
         sbInfo.Font = New Font("Segoe UI", 8.0F)
         sbVersion.ForeColor = ModEstilo.CLR_SURFACE
         sbVersion.Font = New Font("Segoe UI", 8.0F)

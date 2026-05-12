@@ -9,6 +9,20 @@ CREATE TABLE CATEGORÍA(
 Id_Categoria int identity (1,1) PRIMARY KEY,
 NombreCat varchar(50) not null)
 
+-- Inserta las categorias iniciales sin duplicarlas si ya existen.
+INSERT INTO CATEGORÍA (NombreCat)
+SELECT v.NombreCat
+FROM (VALUES
+('Amigurumis'),
+('Accesorios'),
+('Decoracion'),
+('Hilos')
+) AS v(NombreCat)
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM CATEGORÍA c
+    WHERE c.NombreCat = v.NombreCat
+)
 
 -- Guarda el catalogo de productos que se venden en caja.
 CREATE TABLE PRODUCTO (
@@ -44,6 +58,15 @@ Id_Pedido INT IDENTITY(1,1) PRIMARY KEY,
     Fecha DATETIME DEFAULT GETDATE(),
     Total DECIMAL(10,2),
     MetodoPago VARCHAR(20),
+    DescripcionPedido NVARCHAR(MAX),
+    Colores NVARCHAR(MAX),
+    Medidas NVARCHAR(MAX),
+    Notas NVARCHAR(MAX),
+    Anticipo DECIMAL(10,2) DEFAULT 0,
+    Saldo DECIMAL(10,2) DEFAULT 0,
+    Cancelada BIT DEFAULT 0,
+    FechaCancelacion DATETIME NULL,
+    MotivoCancelacion NVARCHAR(200),
     -- Relaciona el pedido con el cliente que lo genera.
     CONSTRAINT FK_PEDIDOS_CLIENTES FOREIGN KEY (ID_CLIENTE) 
     REFERENCES CLIENTES(ID_CLIENTE))

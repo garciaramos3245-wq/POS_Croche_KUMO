@@ -82,6 +82,7 @@ Public Class Form7
     Private Sub AplicarDisenoReporte()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.ConfigurarRelojStatusStrip(Me, StatusStrip1)
         ModEstilo.EstilarBotonPrimario(btnVer)
         ModEstilo.EstilarBotonSecundario(btnHoy)
         ModEstilo.EstilarBotonSecundario(btnImprimir)
@@ -313,18 +314,22 @@ Public Class Form7
 
             Dim ventas = Await Task.Run(Function()
                                             Return ObtenerTabla(
-                                                "SELECT Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-                                                "ISNULL(MetodoPago, 'Efectivo') AS [Metodo], ISNULL(Subtotal, Total) AS [Subtotal], " &
-                                                "ISNULL(Descuento, 0) AS [Descuento], ISNULL(IVA, 0) AS [IVA], Total, " &
-                                                "ISNULL(PagoCon, Total) AS [Pago], ISNULL(Cambio, 0) AS [Cambio] " &
-                                                "FROM PEDIDOS WHERE CAST(Fecha AS DATE)=@fecha ORDER BY Fecha DESC",
+                                                "SELECT p.Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(p.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
+                                                "ISNULL(p.MetodoPago, 'Efectivo') AS [Metodo], ISNULL(p.Subtotal, p.Total) AS [Subtotal], " &
+                                                "ISNULL(p.Descuento, 0) AS [Descuento], ISNULL(p.IVA, 0) AS [IVA], p.Total, " &
+                                                "ISNULL(p.PagoCon, p.Total) AS [Pago], ISNULL(p.Cambio, 0) AS [Cambio], " &
+                                                "CASE WHEN ISNULL(p.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado] " &
+                                                "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha " &
+                                                "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
+                                                "ORDER BY p.Fecha DESC",
                                                 New SqlParameter("@fecha", fecha))
                                         End Function)
 
             Dim resumen = Await Task.Run(Function()
-                                             Return ObtenerTabla(
-                                                 "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
-                                                 "FROM PEDIDOS WHERE CAST(Fecha AS DATE)=@fecha",
+                                                 Return ObtenerTabla(
+                                                     "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
+                                                 "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha AND ISNULL(p.Cancelada, 0) = 0 " &
+                                                 "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
                                                  New SqlParameter("@fecha", fecha))
                                          End Function)
 
@@ -332,7 +337,7 @@ Public Class Form7
                                                Return ObtenerEscalar(
                                                    "SELECT ISNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
                                                    "INNER JOIN PEDIDOS p ON p.Id_Pedido = d.Id_Pedido " &
-                                                   "WHERE CAST(p.Fecha AS DATE)=@fecha",
+                                                   "WHERE CAST(p.Fecha AS DATE)=@fecha AND ISNULL(p.Cancelada, 0) = 0",
                                                    New SqlParameter("@fecha", fecha))
                                            End Function)
 
@@ -342,7 +347,7 @@ Public Class Form7
                                                       "FROM DET_PEDIDOS d " &
                                                       "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
                                                       "INNER JOIN PEDIDOS pd ON pd.Id_Pedido = d.Id_Pedido " &
-                                                      "WHERE CAST(pd.Fecha AS DATE)=@fecha " &
+                                                      "WHERE CAST(pd.Fecha AS DATE)=@fecha AND ISNULL(pd.Cancelada, 0) = 0 " &
                                                       "GROUP BY p.NombrePr ORDER BY Unidades DESC",
                                                       New SqlParameter("@fecha", fecha))
                                               End Function)
@@ -406,7 +411,9 @@ Public Class Form7
         Try
             Dim venta = ObtenerTabla(
                 "SELECT ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, ISNULL(PagoCon, Total) AS PagoCon, " &
-                "ISNULL(Cambio, 0) AS Cambio, Total FROM PEDIDOS WHERE Id_Pedido = @id",
+                "ISNULL(Cambio, 0) AS Cambio, Total, ISNULL(Cancelada, 0) AS Cancelada " &
+                "FROM PEDIDOS p WHERE p.Id_Pedido = @id " &
+                "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
                 New SqlParameter("@id", id))
 
             Dim detalle = ObtenerTabla(
@@ -424,6 +431,7 @@ Public Class Form7
             If venta.Rows.Count > 0 Then
                 Dim row = venta.Rows(0)
                 lblDetalleResumen.Text = "Venta V-" & id.ToString("000") &
+                    " | " & If(CBool(row("Cancelada")), "Cancelada", "Activa") &
                     " | " & row("MetodoPago").ToString() &
                     " | Total $" & CDec(row("Total")).ToString("N2") &
                     " | Pago $" & CDec(row("PagoCon")).ToString("N2") &
@@ -504,12 +512,14 @@ Public Class Form7
     Private Function ObtenerDetalleVentasReporte() As DataTable
         Return ObtenerTabla(
             "SELECT pd.Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(pd.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
+            "CASE WHEN ISNULL(pd.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado], " &
             "ISNULL(pd.MetodoPago, 'Efectivo') AS [Metodo], p.NombrePr AS [Producto], d.Cantidad, " &
             "d.PrecioVentaMomento AS [Precio unitario], (d.Cantidad * d.PrecioVentaMomento) AS [Importe] " &
             "FROM DET_PEDIDOS d " &
             "INNER JOIN PEDIDOS pd ON pd.Id_Pedido = d.Id_Pedido " &
             "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
             "WHERE CAST(pd.Fecha AS DATE)=@fecha " &
+            "AND EXISTS (SELECT 1 FROM DET_PEDIDOS dv WHERE dv.Id_Pedido = pd.Id_Pedido) " &
             "ORDER BY pd.Fecha DESC, pd.Id_Pedido DESC, p.NombrePr",
             New SqlParameter("@fecha", dtpFecha.Value.Date))
     End Function
@@ -520,7 +530,8 @@ Public Class Form7
             "SELECT ISNULL(MetodoPago, 'Efectivo') AS [Metodo de pago], COUNT(*) AS [Ventas], " &
             "ISNULL(SUM(ISNULL(Subtotal, Total)), 0) AS [Subtotal], ISNULL(SUM(ISNULL(Descuento, 0)), 0) AS [Descuentos], " &
             "ISNULL(SUM(ISNULL(IVA, 0)), 0) AS [IVA], ISNULL(SUM(Total), 0) AS [Total] " &
-            "FROM PEDIDOS WHERE CAST(Fecha AS DATE)=@fecha " &
+            "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha AND ISNULL(p.Cancelada, 0) = 0 " &
+            "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
             "GROUP BY ISNULL(MetodoPago, 'Efectivo') ORDER BY [Total] DESC",
             New SqlParameter("@fecha", dtpFecha.Value.Date))
     End Function

@@ -9,6 +9,8 @@ Public Class Form6
     ' Documentacion: Modelos internos, folio activo y paleta visual del ticket.
 
     Private idVenta As Integer
+    Private statusTicket As StatusStrip
+    Private sbTicketInfo As ToolStripStatusLabel
     ' Documentacion: Modelo de una linea del ticket con producto, cantidad e importe.
     Private Class TicketDetalle
         ' Documentacion: Nombre del producto mostrado en el ticket.
@@ -43,6 +45,10 @@ Public Class Form6
         Public Property PagoCon As Decimal
         ' Documentacion: Cambio entregado al cliente.
         Public Property Cambio As Decimal
+        ' Documentacion: Indica si la venta fue cancelada despues de registrarse.
+        Public Property Cancelada As Boolean
+        ' Documentacion: Fecha de cancelacion en texto si existe.
+        Public Property FechaCancelacion As String
         ' Documentacion: Lista de productos incluidos en el ticket.
         Public Property Detalles As List(Of TicketDetalle)
     End Class
@@ -104,8 +110,32 @@ Public Class Form6
         btnCerrar.ForeColor = CLR_TEXT_PREMIUM
         btnCerrar.FlatAppearance.BorderColor = Color.FromArgb(214, 189, 150)
         btnCerrar.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 235, 224)
+        ConfigurarBarraInferiorTicket()
         Me.Text = tituloVentana
         ConfigurarLayoutTicket()
+    End Sub
+
+    ' Documentacion: Crea la barra inferior del ticket y le agrega fecha y hora actual.
+    Private Sub ConfigurarBarraInferiorTicket()
+        If statusTicket Is Nothing Then
+            statusTicket = New StatusStrip() With {
+                .Name = "StatusStripTicket",
+                .SizingGrip = False,
+                .Dock = DockStyle.Bottom
+            }
+            sbTicketInfo = New ToolStripStatusLabel() With {
+                .Name = "sbTicketInfo",
+                .Spring = True,
+                .Text = "  Ticket"
+            }
+            statusTicket.Items.Add(sbTicketInfo)
+            Me.Controls.Add(statusTicket)
+        End If
+
+        statusTicket.BackColor = CLR_DARK_PREMIUM
+        sbTicketInfo.ForeColor = Color.White
+        sbTicketInfo.Font = New Font("Segoe UI", 8.0F)
+        ModEstilo.ConfigurarRelojStatusStrip(Me, statusTicket)
     End Sub
 
     ' Documentacion: Crea o reutiliza el logo del encabezado y lo carga desde Assets.
@@ -148,7 +178,9 @@ Public Class Form6
             "Total, " &
             "ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, " &
             "ISNULL(PagoCon, Total) AS PagoCon, " &
-            "ISNULL(Cambio, 0) AS Cambio " &
+            "ISNULL(Cambio, 0) AS Cambio, " &
+            "ISNULL(Cancelada, 0) AS Cancelada, " &
+            "FechaCancelacion " &
             "FROM PEDIDOS WHERE Id_Pedido = @id",
             New SqlParameter("@id", idVenta))
 
@@ -165,13 +197,20 @@ Public Class Form6
                 .MetodoPago = "Efectivo",
                 .PagoCon = 0D,
                 .Cambio = 0D,
+                .Cancelada = False,
+                .FechaCancelacion = "",
                 .Detalles = New List(Of TicketDetalle)()
             }
         End If
 
+        Dim fechaCancelacion As String = ""
+        If Not IsDBNull(venta.Rows(0)("FechaCancelacion")) Then
+            fechaCancelacion = ModEstilo.FormatoDiaFechaHora(CDate(venta.Rows(0)("FechaCancelacion")))
+        End If
+
         Dim datos As New TicketData With {
             .Numero = "V-" & idVenta.ToString("000"),
-            .Fecha = ModEstilo.FormatoFechaHora24(CDate(venta.Rows(0)("Fecha"))),
+            .Fecha = ModEstilo.FormatoDiaFechaHora(CDate(venta.Rows(0)("Fecha"))),
             .Subtotal = CDec(venta.Rows(0)("Subtotal")),
             .Descuento = CDec(venta.Rows(0)("Descuento")),
             .BaseGravable = CDec(venta.Rows(0)("BaseGravable")),
@@ -181,6 +220,8 @@ Public Class Form6
             .MetodoPago = venta.Rows(0)("MetodoPago").ToString(),
             .PagoCon = CDec(venta.Rows(0)("PagoCon")),
             .Cambio = CDec(venta.Rows(0)("Cambio")),
+            .Cancelada = CBool(venta.Rows(0)("Cancelada")),
+            .FechaCancelacion = fechaCancelacion,
             .Detalles = New List(Of TicketDetalle)()
         }
 
@@ -226,6 +267,10 @@ Public Class Form6
         sb.AppendLine("================================")
         sb.AppendLine("Ticket : " & datos.Numero)
         sb.AppendLine("Fecha  : " & datos.Fecha)
+        If datos.Cancelada Then
+            sb.AppendLine("Estado : CANCELADA")
+            If datos.FechaCancelacion <> "" Then sb.AppendLine("Cancel.: " & datos.FechaCancelacion)
+        End If
         sb.AppendLine("--------------------------------")
         sb.AppendLine("PRODUCTOS")
         sb.AppendLine("--------------------------------")
@@ -347,6 +392,12 @@ Public Class Form6
 
         AppendTexto("Resumen" & Environment.NewLine, New Font("Segoe UI", 9.0F, FontStyle.Bold), CLR_DARK_PREMIUM)
         AppendTexto("Folio: " & datos.Numero & Environment.NewLine, New Font("Segoe UI", 9.0F), CLR_TEXT_PREMIUM)
+        If datos.Cancelada Then
+            AppendTexto("Estado: Cancelada" & Environment.NewLine, New Font("Segoe UI", 9.0F, FontStyle.Bold), Color.FromArgb(154, 73, 64))
+            If datos.FechaCancelacion <> "" Then
+                AppendTexto("Cancelada: " & datos.FechaCancelacion & Environment.NewLine, New Font("Segoe UI", 9.0F), Color.FromArgb(154, 73, 64))
+            End If
+        End If
         AppendTexto("Metodo: " & datos.MetodoPago & Environment.NewLine, New Font("Segoe UI", 9.0F), CLR_TEXT_PREMIUM)
         AppendTexto("Fecha: " & datos.Fecha & Environment.NewLine & Environment.NewLine, New Font("Segoe UI", 9.0F), CLR_TEXT_PREMIUM)
 
@@ -429,7 +480,8 @@ Public Class Form6
     Private Sub ConfigurarLayoutTicket()
         Dim margen As Integer = 24
         Dim anchoCard As Integer = Math.Min(620, Me.ClientSize.Width - (margen * 2))
-        Dim altoCard As Integer = Me.ClientSize.Height - pnlHeader.Height - pnlLinea.Height - 160
+        Dim altoStatus As Integer = If(statusTicket Is Nothing, 0, statusTicket.Height)
+        Dim altoCard As Integer = Me.ClientSize.Height - pnlHeader.Height - pnlLinea.Height - altoStatus - 160
         Dim xCard As Integer = (Me.ClientSize.Width - anchoCard) \ 2
         Dim yCard As Integer = pnlLinea.Bottom + 28
 

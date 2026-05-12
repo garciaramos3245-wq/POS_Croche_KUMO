@@ -54,6 +54,7 @@ Public Class Form3
 
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
+        ModEstilo.ConfigurarRelojStatusStrip(Me, StatusStrip1)
         ModEstilo.EstilarBotonPrimario(btnGuardar)
         ModEstilo.EstilarBotonPeligro(btnEliminar)
         ModEstilo.EstilarBotonSecundario(btnNuevo)
