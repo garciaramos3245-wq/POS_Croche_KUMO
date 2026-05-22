@@ -1,4 +1,3 @@
-' Archivo: DbKumo.vb.
 ' Centraliza la conexion a SQL Server, las consultas reutilizables y los apoyos para clientes y pagos.
 
 Imports System.Data
@@ -6,14 +5,14 @@ Imports System.Data.SqlClient
 
 Module DbKumo
 
-    ' Documentacion: Funciones compartidas para abrir conexiones y ejecutar consultas contra SQL Server.
+    ' Funciones compartidas para abrir conexiones y ejecutar consultas contra SQL Server.
 
-    ' Documentacion: Crea una conexion nueva usando la cadena configurada en My.Settings.
+    ' Crea una conexion nueva usando la cadena configurada en My.Settings.
     Public Function ObtenerConexion() As SqlConnection
         Return New SqlConnection(My.Settings.Con_Croche)
     End Function
 
-    ' Documentacion: Ejecuta una consulta SELECT parametrizada y devuelve los resultados en un DataTable.
+    ' Ejecuta una consulta SELECT parametrizada y devuelve los resultados en un DataTable.
     Public Function ObtenerTabla(sql As String, ParamArray parametros() As SqlParameter) As DataTable
         Dim tabla As New DataTable()
         Using cn = ObtenerConexion()
@@ -27,7 +26,7 @@ Module DbKumo
         Return tabla
     End Function
 
-    ' Documentacion: Ejecuta una consulta que devuelve un solo valor, como un conteo o un folio.
+    ' Ejecuta una consulta que devuelve un solo valor, como un conteo o un folio.
     Public Function ObtenerEscalar(sql As String, ParamArray parametros() As SqlParameter) As Object
         Using cn = ObtenerConexion()
             cn.Open()
@@ -40,7 +39,7 @@ Module DbKumo
         End Using
     End Function
 
-    ' Documentacion: Garantiza que PEDIDOS tenga las columnas de subtotal, descuento, IVA y pago que usa la caja.
+    ' Garantiza que PEDIDOS tenga las columnas de subtotal, descuento, IVA y pago que usa la caja.
     Public Sub AsegurarColumnasPagoPedido()
         Using cn = ObtenerConexion()
             cn.Open()
@@ -67,7 +66,7 @@ Module DbKumo
         End Using
     End Sub
 
-    ' Documentacion: Garantiza que PEDIDOS tenga los campos completos de la ficha de pedido especial.
+    ' Garantiza que PEDIDOS tenga los campos completos de la ficha de pedido especial.
     Public Sub AsegurarColumnasDetallePedido()
         Using cn = ObtenerConexion()
             cn.Open()
@@ -82,14 +81,14 @@ Module DbKumo
         End Using
     End Sub
 
-    ' Documentacion: Ejecuta una instruccion SQL administrativa usando una conexion ya abierta.
+    ' Ejecuta una instruccion SQL administrativa usando una conexion ya abierta.
     Private Sub EjecutarSqlPagoPedido(cn As SqlConnection, sql As String)
         Using cmd As New SqlCommand(sql, cn)
             cmd.ExecuteNonQuery()
         End Using
     End Sub
 
-    ' Documentacion: Busca un cliente por nombre y telefono; si no existe, lo crea dentro de la transaccion actual.
+    ' Busca un cliente por nombre y telefono; si no existe, lo crea dentro de la transaccion actual.
     Public Function ObtenerIdCliente(nombreCompleto As String, telefono As String, trans As SqlTransaction) As Integer
         Dim nombres As String = nombreCompleto.Trim()
         Dim apellidos As String = ""
@@ -127,7 +126,7 @@ Module DbKumo
         End Using
     End Function
 
-    ' Documentacion: Obtiene o crea el cliente generico Publico General para ventas de mostrador.
+    ' Obtiene o crea el cliente generico Publico General para ventas de mostrador.
     Public Function ObtenerIdClienteGeneral(trans As SqlTransaction) As Integer
         Using cmdBuscar As New SqlCommand(
             "SELECT TOP 1 ID_CLIENTE FROM CLIENTES " &

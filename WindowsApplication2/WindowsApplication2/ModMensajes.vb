@@ -1,13 +1,12 @@
-' Archivo: ModMensajes.vb.
 ' Muestra dialogos personalizados de informacion, confirmacion, advertencia y error.
 
 Imports System.Runtime.InteropServices
 
 Module ModMensajes
 
-    ' Documentacion: Tipos y funciones que construyen dialogos modales personalizados.
+    ' Tipos y funciones que construyen dialogos modales personalizados.
 
-    ' Documentacion: Tipos de aviso que determinan color, subtitulo e intencion del dialogo.
+    ' Tipos de aviso que determinan color, subtitulo e intencion del dialogo.
     Public Enum TipoAviso
         Info
         Exito
@@ -15,7 +14,7 @@ Module ModMensajes
         [Error]
     End Enum
 
-    ' Documentacion: Importa la funcion de Windows que crea regiones con esquinas redondeadas.
+    ' Importa la funcion de Windows que crea regiones con esquinas redondeadas.
     <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
     Private Function CreateRoundRectRgn(
         ByVal nLeftRect As Integer,
@@ -27,12 +26,12 @@ Module ModMensajes
     ) As IntPtr
     End Function
 
-    ' Documentacion: Libera objetos GDI creados al aplicar regiones redondeadas.
+    ' Libera objetos GDI creados al aplicar regiones redondeadas.
     <DllImport("gdi32.dll")>
     Private Function DeleteObject(ByVal hObject As IntPtr) As Boolean
     End Function
 
-    ' Documentacion: Muestra un aviso de un solo boton al usuario.
+    ' Muestra un aviso de un solo boton al usuario.
     Public Sub Mostrar(owner As IWin32Window,
                        titulo As String,
                        mensaje As String,
@@ -41,7 +40,7 @@ Module ModMensajes
         MostrarDialogo(owner, titulo, mensaje, textoBoton, "", tipo)
     End Sub
 
-    ' Documentacion: Muestra una confirmacion con boton principal y secundario, y devuelve la decision.
+    ' Muestra una confirmacion con boton principal y secundario, y devuelve la decision.
     Public Function Confirmar(owner As IWin32Window,
                               titulo As String,
                               mensaje As String,
@@ -51,7 +50,7 @@ Module ModMensajes
         Return MostrarDialogo(owner, titulo, mensaje, textoPrimario, textoSecundario, tipo)
     End Function
 
-    ' Documentacion: Construye el formulario modal personalizado y devuelve si se acepto la accion.
+    ' Construye el formulario modal personalizado y devuelve si se acepto la accion.
     Private Function MostrarDialogo(owner As IWin32Window,
                                     titulo As String,
                                     mensaje As String,
@@ -176,7 +175,7 @@ Module ModMensajes
         End Using
     End Function
 
-    ' Documentacion: Devuelve el color de acento segun el tipo de aviso.
+    ' Devuelve el color de acento segun el tipo de aviso.
     Private Function ColorTipo(tipo As TipoAviso) As Color
         Select Case tipo
             Case TipoAviso.Exito
@@ -190,7 +189,7 @@ Module ModMensajes
         End Select
     End Function
 
-    ' Documentacion: Devuelve el texto secundario segun el tipo de aviso.
+    ' Devuelve el texto secundario segun el tipo de aviso.
     Private Function SubtituloTipo(tipo As TipoAviso) As String
         Select Case tipo
             Case TipoAviso.Exito
@@ -204,12 +203,12 @@ Module ModMensajes
         End Select
     End Function
 
-    ' Documentacion: Genera una variante mas oscura de un color para estados de hover.
+    ' Genera una variante mas oscura de un color para estados de hover.
     Private Function Oscurecer(color As Color) As Color
         Return Color.FromArgb(Math.Max(0, color.R - 18), Math.Max(0, color.G - 18), Math.Max(0, color.B - 18))
     End Function
 
-    ' Documentacion: Aplica colores, borde, fuente y cursor a botones de dialogo.
+    ' Aplica colores, borde, fuente y cursor a botones de dialogo.
     Private Sub EstilarBoton(btn As Button, colorFondo As Color, colorTexto As Color, colorBorde As Color, colorHover As Color)
         btn.BackColor = colorFondo
         btn.ForeColor = colorTexto
@@ -223,7 +222,7 @@ Module ModMensajes
         btn.UseVisualStyleBackColor = False
     End Sub
 
-    ' Documentacion: Redondea controles del dialogo y limpia la region si falla el recurso nativo.
+    ' Redondea controles del dialogo y limpia la region si falla el recurso nativo.
     Private Sub RedondearControl(ctrl As Control, radius As Integer)
         If ctrl Is Nothing OrElse ctrl.Width <= 0 OrElse ctrl.Height <= 0 Then Return
 

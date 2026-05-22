@@ -1,11 +1,10 @@
-' Archivo: Form3.vb.
 ' Administra el inventario: busqueda, alta, edicion, eliminacion y recarga de productos.
 
 Imports System.Data.SqlClient
 
 Public Class Form3
 
-    ' Documentacion: Paleta visual y estado usado por la pantalla de inventario.
+    ' Paleta visual y estado usado por la pantalla de inventario.
 
     Private ReadOnly CLR_BG_PREMIUM As Color = Color.FromArgb(244, 240, 234)
     Private ReadOnly CLR_SURFACE_PREMIUM As Color = Color.FromArgb(255, 252, 247)
@@ -15,7 +14,7 @@ Public Class Form3
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
     Private ReadOnly CLR_GOLD_PREMIUM As Color = Color.FromArgb(214, 189, 150)
 
-    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
+    ' Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
@@ -31,12 +30,12 @@ Public Class Form3
     Private idSeleccionado As Integer = 0
     Private _temaAplicado As Boolean = False
 
-    ' Documentacion: Devuelve el nombre real de la tabla de categorias con el caracter acentuado.
+    ' Devuelve el nombre real de la tabla de categorias con el caracter acentuado.
     Private Function TablaCategorias() As String
         Return "[CATEGOR" & ChrW(205) & "A]"
     End Function
 
-    ' Documentacion: Prepara la ventana, escucha cambios de inventario y carga categorias y productos.
+    ' Prepara la ventana, escucha cambios de inventario y carga categorias y productos.
     Private Sub Form3_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
         AddHandler ModActualizaciones.InventarioActualizado, AddressOf RefrescarInventario
@@ -45,7 +44,7 @@ Public Class Form3
         CargarProductos()
     End Sub
 
-    ' Documentacion: Aplica el tema visual y evita repetir trabajo si ya fue aplicado.
+    ' Aplica el tema visual y evita repetir trabajo si ya fue aplicado.
     Private Sub AplicarTemaInventario()
         If _temaAplicado Then
             ConfigurarLayoutInventario()
@@ -66,7 +65,7 @@ Public Class Form3
         _temaAplicado = True
     End Sub
 
-    ' Documentacion: Configura textos, colores, botones, campos y tabla del inventario.
+    ' Configura textos, colores, botones, campos y tabla del inventario.
     Private Sub AplicarEstiloInventarioPremium()
         Me.BackColor = CLR_BG_PREMIUM
         Me.Text = "KUMO | Inventario"
@@ -173,7 +172,7 @@ Public Class Form3
         btnRegresar.FlatAppearance.MouseOverBackColor = Color.FromArgb(57, 64, 73)
     End Sub
 
-    ' Documentacion: Distribuye filtros, tabla y ficha del producto de forma responsiva.
+    ' Distribuye filtros, tabla y ficha del producto de forma responsiva.
     Private Sub ConfigurarLayoutInventario()
         Dim margen As Integer = 18
         Dim altoBoton As Integer = 40
@@ -244,7 +243,7 @@ Public Class Form3
         btnRegresar.Anchor = AnchorStyles.Top Or AnchorStyles.Right
     End Sub
 
-    ' Documentacion: Consulta las categorias desde la base de datos y las aplica al combo.
+    ' Consulta las categorias desde la base de datos y las aplica al combo.
     Private Sub CargarCategorias()
         Dim tabla = ObtenerTabla("SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat")
         cbCategoria.Items.Clear()
@@ -260,7 +259,7 @@ Public Class Form3
         If cbCatDetalle.Items.Count > 0 Then cbCatDetalle.SelectedIndex = 0
     End Sub
 
-    ' Documentacion: Carga productos con precio, stock y categoria desde la base.
+    ' Carga productos con precio, stock y categoria desde la base.
     Private Sub CargarProductos()
         Try
             dtProductos = ObtenerTabla(
@@ -279,7 +278,7 @@ Public Class Form3
         End Try
     End Sub
 
-    ' Documentacion: Filtra la tabla de inventario por texto y categoria.
+    ' Filtra la tabla de inventario por texto y categoria.
     Private Sub btnFiltrar_Click(sender As Object, e As EventArgs) Handles btnFiltrar.Click
         Dim t As String = txtBuscar.Text.Trim().Replace("'", "''")
         Dim c As String = cbCategoria.Text.Replace("'", "''")
@@ -291,7 +290,7 @@ Public Class Form3
         dtProductos.DefaultView.RowFilter = String.Join(" AND ", filtros.ToArray())
     End Sub
 
-    ' Documentacion: Copia el producto seleccionado a los campos de detalle.
+    ' Copia el producto seleccionado a los campos de detalle.
     Private Sub dgv_SelectionChanged(sender As Object, e As EventArgs) Handles dgv.SelectionChanged
         If dgv.CurrentRow Is Nothing Then Return
         txtNombre.Text = dgv.CurrentRow.Cells("Nombre").Value.ToString()
@@ -302,7 +301,7 @@ Public Class Form3
         If idx >= 0 Then cbCatDetalle.SelectedIndex = idx
     End Sub
 
-    ' Documentacion: Limpia la ficha para capturar un producto nuevo.
+    ' Limpia la ficha para capturar un producto nuevo.
     Private Sub btnNuevo_Click(sender As Object, e As EventArgs) Handles btnNuevo.Click
         idSeleccionado = 0
         txtNombre.Clear()
@@ -317,7 +316,7 @@ Public Class Form3
         txtNombre.Focus()
     End Sub
 
-    ' Documentacion: Valida y guarda un producto nuevo o actualiza uno existente junto con su stock.
+    ' Valida y guarda un producto nuevo o actualiza uno existente junto con su stock.
     Private Sub btnGuardar_Click(sender As Object, e As EventArgs) Handles btnGuardar.Click
         If txtNombre.Text.Trim() = "" Then ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el nombre del producto.", ModMensajes.TipoAviso.Advertencia) : Return
         If txtPrecio.Text.Trim() = "" Then ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el precio del producto.", ModMensajes.TipoAviso.Advertencia) : Return
@@ -422,7 +421,7 @@ Public Class Form3
         CargarProductos()
     End Sub
 
-    ' Documentacion: Confirma y elimina el producto seleccionado junto con su inventario.
+    ' Confirma y elimina el producto seleccionado junto con su inventario.
     Private Sub btnEliminar_Click(sender As Object, e As EventArgs) Handles btnEliminar.Click
         If idSeleccionado = 0 Then ModMensajes.Mostrar(Me, "Selecciona un producto", "Elige un producto de la lista antes de eliminarlo.", ModMensajes.TipoAviso.Advertencia) : Return
         If ModMensajes.Confirmar(Me, "Eliminar producto", "Deseas eliminar " & txtNombre.Text & " del inventario?", "Eliminar", "Cancelar", ModMensajes.TipoAviso.Advertencia) Then
@@ -456,29 +455,29 @@ Public Class Form3
         End If
     End Sub
 
-    ' Documentacion: Recarga la lista de productos.
+    ' Recarga la lista de productos.
     Private Sub btnActualizar_Click(sender As Object, e As EventArgs) Handles btnActualizar.Click
         CargarProductos()
     End Sub
 
-    ' Documentacion: Cierra el formulario actual.
+    ' Cierra el formulario actual.
     Private Sub btnRegresar_Click(sender As Object, e As EventArgs) Handles btnRegresar.Click
         Me.Close()
     End Sub
 
-    ' Documentacion: Recarga categorias y productos despues de cambios externos.
+    ' Recarga categorias y productos despues de cambios externos.
     Private Sub RefrescarInventario()
         If Me.IsDisposed Then Return
         CargarCategorias()
         CargarProductos()
     End Sub
 
-    ' Documentacion: Quita el manejador de actualizacion de inventario al cerrar.
+    ' Quita el manejador de actualizacion de inventario al cerrar.
     Private Sub Form3_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.InventarioActualizado, AddressOf RefrescarInventario
     End Sub
 
-    ' Documentacion: Reacomoda el layout del inventario al cambiar el tamano.
+    ' Reacomoda el layout del inventario al cambiar el tamano.
     Private Sub Form3_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return

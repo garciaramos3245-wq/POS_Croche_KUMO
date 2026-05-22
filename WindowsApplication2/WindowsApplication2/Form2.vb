@@ -1,4 +1,3 @@
-' Archivo: Form2.vb.
 ' Administra el punto de venta: catalogo, carrito, cobro, guardado de ventas y navegacion.
 
 Imports System.Runtime.InteropServices
@@ -7,14 +6,14 @@ Imports System.Drawing.Printing
 
 Public Class Form2
 
-    ' Documentacion: Estado interno, controles dinamicos y tablas de trabajo del punto de venta.
+    ' Estado interno, controles dinamicos y tablas de trabajo del punto de venta.
 
-    ' Documentacion: Tasa decimal usada para calcular el IVA sobre la base gravable.
+    ' Tasa decimal usada para calcular el IVA sobre la base gravable.
     Private Const TASA_IVA As Decimal = 0.16D
-    ' Documentacion: Tasa de IVA en porcentaje que se guarda y se muestra en tickets.
+    ' Tasa de IVA en porcentaje que se guarda y se muestra en tickets.
     Private Const TASA_IVA_PCT As Decimal = 16D
 
-    ' Documentacion: Indica al login si la caja se abrio sin errores criticos.
+    ' Indica al login si la caja se abrio sin errores criticos.
     Public ReadOnly Property InicioCorrecto As Boolean
         Get
             Return _inicioCorrecto
@@ -50,7 +49,7 @@ Public Class Form2
     Private _cargandoDatosPOS As Boolean
     Private _ultimaClaveRecordatorioPedidos As String = ""
 
-    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
+    ' Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ModEstilo.AplicarTemaConsistente(Me,
@@ -65,7 +64,7 @@ Public Class Form2
     Private dtCarrito As New DataTable
     Private dtProductos As New DataTable
 
-    ' Documentacion: Importa la funcion de Windows que crea regiones con esquinas redondeadas.
+    ' Importa la funcion de Windows que crea regiones con esquinas redondeadas.
     <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
     Private Shared Function CreateRoundRectRgn(
         ByVal nLeftRect As Integer,
@@ -77,12 +76,12 @@ Public Class Form2
     ) As IntPtr
     End Function
 
-    ' Documentacion: Libera objetos GDI creados al aplicar regiones redondeadas.
+    ' Libera objetos GDI creados al aplicar regiones redondeadas.
     <DllImport("gdi32.dll")>
     Private Shared Function DeleteObject(hObject As IntPtr) As Boolean
     End Function
 
-    ' Documentacion: Inicializa la caja, se suscribe a eventos y comienza la carga de datos.
+    ' Inicializa la caja, se suscribe a eventos y comienza la carga de datos.
     Private Sub Form2_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
             ModEstilo.PrepararVentana(Me)
@@ -107,7 +106,7 @@ Public Class Form2
         End Try
     End Sub
 
-    ' Documentacion: Aplica estilos compartidos y particulares de la pantalla de caja.
+    ' Aplica estilos compartidos y particulares de la pantalla de caja.
     Private Sub AplicarDisenoPOS()
         InicializarComponentesPOS()
         ModEstilo.EstilarControles(Me)
@@ -125,7 +124,7 @@ Public Class Form2
         ConfigurarPantallaPOS()
     End Sub
 
-    ' Documentacion: Conecta tablas vacias y deja la caja visible mientras carga el catalogo.
+    ' Conecta tablas vacias y deja la caja visible mientras carga el catalogo.
     Private Sub PrepararVistaInicialPOS()
         If dgvCarrito.DataSource Is Nothing Then
             dgvCarrito.DataSource = dtCarrito
@@ -146,12 +145,12 @@ Public Class Form2
         sbInfo.Text = "   Mostrando caja. Cargando catalogo..."
     End Sub
 
-    ' Documentacion: Dispara la carga asincrona inicial del catalogo y folio.
+    ' Dispara la carga asincrona inicial del catalogo y folio.
     Private Async Sub IniciarCargaInicialPOS()
         Await CargarDatosInicialesPOSAsync()
     End Sub
 
-    ' Documentacion: Carga categorias, productos y numero de venta en segundo plano.
+    ' Carga categorias, productos y numero de venta en segundo plano.
     Private Async Function CargarDatosInicialesPOSAsync() As Task
         If _cargandoDatosPOS OrElse Me.IsDisposed Then Return
 
@@ -195,7 +194,7 @@ Public Class Form2
         End Try
     End Function
 
-    ' Documentacion: Crea paneles dinamicos del encabezado, catalogo, carrito y totales.
+    ' Crea paneles dinamicos del encabezado, catalogo, carrito y totales.
     Private Sub InicializarComponentesPOS()
         If pnlTopBar IsNot Nothing Then Return
 
@@ -297,7 +296,7 @@ Public Class Form2
         pnlTopBar.BringToFront()
     End Sub
 
-    ' Documentacion: Aplica la identidad visual retail al punto de venta.
+    ' Aplica la identidad visual retail al punto de venta.
     Private Sub AplicarEstiloPOS()
         If pnlTopBar Is Nothing Then Return
 
@@ -417,7 +416,7 @@ Public Class Form2
         AplicarCurvasPOS()
     End Sub
 
-    ' Documentacion: Configura el formato de una tarjeta pequena de indicador.
+    ' Configura el formato de una tarjeta pequena de indicador.
     Private Sub ConfigurarBadge(panel As Panel, titulo As Label, valor As Label, colorFondo As Color, colorTitulo As Color, colorValor As Color)
         panel.BackColor = colorFondo
         titulo.ForeColor = colorTitulo
@@ -428,7 +427,7 @@ Public Class Form2
         valor.TextAlign = ContentAlignment.MiddleLeft
     End Sub
 
-    ' Documentacion: Aplica estilo retail a un boton con colores y tamano de fuente recibidos.
+    ' Aplica estilo retail a un boton con colores y tamano de fuente recibidos.
     Private Sub EstilarBotonRetail(btn As Button, colorFondo As Color, colorTexto As Color, colorBorde As Color, colorHover As Color, fontSize As Single)
         btn.BackColor = colorFondo
         btn.ForeColor = colorTexto
@@ -442,7 +441,7 @@ Public Class Form2
         btn.UseVisualStyleBackColor = False
     End Sub
 
-    ' Documentacion: Aplica estilo de campo de captura retail y alinea su texto.
+    ' Aplica estilo de campo de captura retail y alinea su texto.
     Private Sub EstilarCampoRetail(tb As TextBox, centrado As Boolean)
         tb.BackColor = Color.FromArgb(255, 252, 247)
         tb.ForeColor = Color.FromArgb(71, 63, 54)
@@ -451,7 +450,7 @@ Public Class Form2
         tb.TextAlign = If(centrado, HorizontalAlignment.Center, HorizontalAlignment.Left)
     End Sub
 
-    ' Documentacion: Aplica estilo visual al combo de categorias.
+    ' Aplica estilo visual al combo de categorias.
     Private Sub EstilarComboRetail(cb As ComboBox)
         cb.BackColor = Color.FromArgb(255, 252, 247)
         cb.ForeColor = Color.FromArgb(71, 63, 54)
@@ -459,7 +458,7 @@ Public Class Form2
         cb.Font = New Font("Segoe UI", 9.5F)
     End Sub
 
-    ' Documentacion: Aplica formato de tabla a catalogo o carrito segun el caso.
+    ' Aplica formato de tabla a catalogo o carrito segun el caso.
     Private Sub EstilarGridRetail(dgv As DataGridView, esCarrito As Boolean)
         dgv.BackgroundColor = Color.FromArgb(255, 252, 247)
         dgv.BorderStyle = BorderStyle.None
@@ -489,7 +488,7 @@ Public Class Form2
         dgv.RowTemplate.Height = 32
     End Sub
 
-    ' Documentacion: Redondea los paneles y botones principales de la caja.
+    ' Redondea los paneles y botones principales de la caja.
     Private Sub AplicarCurvasPOS()
         RedondearControl(pnlTopBar, 26)
         RedondearControl(gbProductos, 24)
@@ -506,7 +505,7 @@ Public Class Form2
         RedondearControl(btnSalida, 18)
     End Sub
 
-    ' Documentacion: Redondea controles del dialogo y limpia la region si falla el recurso nativo.
+    ' Redondea controles del dialogo y limpia la region si falla el recurso nativo.
     Private Sub RedondearControl(ctrl As Control, radius As Integer)
         If ctrl Is Nothing OrElse ctrl.Width <= 0 OrElse ctrl.Height <= 0 Then Return
 
@@ -522,7 +521,7 @@ Public Class Form2
         End Try
     End Sub
 
-    ' Documentacion: Muestra una version minima de la caja si ocurre un error al cargar.
+    ' Muestra una version minima de la caja si ocurre un error al cargar.
     Private Sub CargarModoSeguroPOS(ex As Exception)
         Try
             If pnlTopBar Is Nothing Then
@@ -548,12 +547,12 @@ Public Class Form2
                              "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
     End Sub
 
-    ' Documentacion: Devuelve el nombre real de la tabla de categorias con el caracter acentuado.
+    ' Devuelve el nombre real de la tabla de categorias con el caracter acentuado.
     Private Function TablaCategorias() As String
         Return "[CATEGOR" & ChrW(205) & "A]"
     End Function
 
-    ' Documentacion: Calcula y asigna posiciones para la pantalla completa del POS.
+    ' Calcula y asigna posiciones para la pantalla completa del POS.
     Private Sub ConfigurarPantallaPOS()
         If pnlTopBar Is Nothing Then Return
 
@@ -660,7 +659,7 @@ Public Class Form2
         AplicarCurvasPOS()
     End Sub
 
-    ' Documentacion: Acomoda el aviso temporal de pedidos cercanos en la esquina superior derecha.
+    ' Acomoda el aviso temporal de pedidos cercanos en la esquina superior derecha.
     Private Sub ConfigurarRecordatorioPedidos()
         If pnlRecordatorioPedidos Is Nothing Then Return
 
@@ -677,14 +676,14 @@ Public Class Form2
         RedondearControl(pnlRecordatorioPedidos, 18)
     End Sub
 
-    ' Documentacion: Reacomoda los controles cuando cambia el tamano del formulario.
+    ' Reacomoda los controles cuando cambia el tamano del formulario.
     Private Sub Form2_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return
         ConfigurarPantallaPOS()
     End Sub
 
-    ' Documentacion: Recarga categorias y productos despues de cambios externos.
+    ' Recarga categorias y productos despues de cambios externos.
     Private Sub RefrescarInventario()
         If Me.IsDisposed Then Return
         CargarCategorias()
@@ -692,7 +691,7 @@ Public Class Form2
         FiltrarProductos()
     End Sub
 
-    ' Documentacion: Vuelve a cargar ventas cuando otro modulo registra cambios.
+    ' Vuelve a cargar ventas cuando otro modulo registra cambios.
     Private Sub RefrescarVentas()
         If Me.IsDisposed Then Return
         CargarProductos()
@@ -700,14 +699,14 @@ Public Class Form2
         ActualizarNumVenta()
     End Sub
 
-    ' Documentacion: Vuelve a revisar pedidos cuando se guardan o eliminan desde la agenda.
+    ' Vuelve a revisar pedidos cuando se guardan o eliminan desde la agenda.
     Private Sub RefrescarRecordatoriosPedidos()
         If Me.IsDisposed Then Return
         _ultimaClaveRecordatorioPedidos = ""
         RevisarRecordatoriosPedidos()
     End Sub
 
-    ' Documentacion: Abre el formulario de cancelaciones desde el menu.
+    ' Abre el formulario de cancelaciones desde el menu.
     Private Sub mnuCancelarVenta_Click(sender As Object, e As EventArgs) Handles mnuCancelarVenta.Click
         Using frm As New Form8()
             frm.ShowDialog()
@@ -715,7 +714,7 @@ Public Class Form2
         CargarProductos()
     End Sub
 
-    ' Documentacion: Abre el formulario de inventario desde el menu.
+    ' Abre el formulario de inventario desde el menu.
     Private Sub mnuInventario_Click(sender As Object, e As EventArgs) Handles mnuInventario.Click
         Using frm As New Form3()
             frm.ShowDialog()
@@ -723,28 +722,28 @@ Public Class Form2
         CargarProductos()
     End Sub
 
-    ' Documentacion: Abre el historial de ventas desde el menu.
+    ' Abre el historial de ventas desde el menu.
     Private Sub mnuHistorial_Click(sender As Object, e As EventArgs) Handles mnuHistorial.Click
         Using frm As New Form4()
             frm.ShowDialog()
         End Using
     End Sub
 
-    ' Documentacion: Abre la administracion de pedidos desde el menu.
+    ' Abre la administracion de pedidos desde el menu.
     Private Sub mnuPedidos_Click(sender As Object, e As EventArgs) Handles mnuPedidos.Click
         Using frm As New Form5()
             frm.ShowDialog()
         End Using
     End Sub
 
-    ' Documentacion: Abre el reporte diario desde el menu.
+    ' Abre el reporte diario desde el menu.
     Private Sub mnuReporte_Click(sender As Object, e As EventArgs) Handles mnuReporte.Click
         Using frm As New Form7()
             frm.ShowDialog()
         End Using
     End Sub
 
-    ' Documentacion: Define las columnas del DataTable que guarda los productos del ticket activo.
+    ' Define las columnas del DataTable que guarda los productos del ticket activo.
     Private Sub InicializarCarrito()
         If dtCarrito.Columns.Count = 0 Then
             dtCarrito.Columns.Add("ID_Producto", GetType(Integer))
@@ -755,13 +754,13 @@ Public Class Form2
         End If
     End Sub
 
-    ' Documentacion: Consulta las categorias desde la base de datos y las aplica al combo.
+    ' Consulta las categorias desde la base de datos y las aplica al combo.
     Private Sub CargarCategorias()
         Dim tabla = ObtenerTabla("SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat")
         AplicarCategorias(tabla)
     End Sub
 
-    ' Documentacion: Llena el combo de categorias y actualiza el contador visual.
+    ' Llena el combo de categorias y actualiza el contador visual.
     Private Sub AplicarCategorias(tabla As DataTable)
         Dim seleccionAnterior As String = cbCategoria.Text
 
@@ -788,7 +787,7 @@ Public Class Form2
         ActualizarIndicadoresPOS()
     End Sub
 
-    ' Documentacion: Carga productos con precio, stock y categoria desde la base.
+    ' Carga productos con precio, stock y categoria desde la base.
     Private Sub CargarProductos()
         If dgvCarrito.DataSource Is Nothing Then
             dgvCarrito.DataSource = dtCarrito
@@ -803,7 +802,7 @@ Public Class Form2
         End Try
     End Sub
 
-    ' Documentacion: Construye el SELECT principal para listar productos, stock y categoria.
+    ' Construye el SELECT principal para listar productos, stock y categoria.
     Private Function ObtenerSqlProductos() As String
         Return "SELECT p.Id_Producto AS ID_Producto, p.NombrePr AS Nombre, p.Precio, " &
                "ISNULL(i.cant_disp, 0) AS Stock, c.NombreCat AS Categoria " &
@@ -813,7 +812,7 @@ Public Class Form2
                "ORDER BY c.NombreCat, p.NombrePr"
     End Function
 
-    ' Documentacion: Crea una tabla vacia con las columnas esperadas del catalogo.
+    ' Crea una tabla vacia con las columnas esperadas del catalogo.
     Private Function CrearTablaProductosVacia() As DataTable
         Dim tabla As New DataTable()
         tabla.Columns.Add("ID_Producto", GetType(Integer))
@@ -824,7 +823,7 @@ Public Class Form2
         Return tabla
     End Function
 
-    ' Documentacion: Oculta y formatea columnas del carrito de venta.
+    ' Oculta y formatea columnas del carrito de venta.
     Private Sub ConfigurarColumnasCarrito()
         If dgvCarrito.Columns.Contains("ID_Producto") Then dgvCarrito.Columns("ID_Producto").Visible = False
         If dgvCarrito.Columns.Contains("Precio") Then dgvCarrito.Columns("Precio").Visible = False
@@ -833,7 +832,7 @@ Public Class Form2
         If dgvCarrito.Columns.Contains("SubTotal") Then dgvCarrito.Columns("SubTotal").HeaderText = "Subtotal"
     End Sub
 
-    ' Documentacion: Oculta y formatea columnas del catalogo de productos.
+    ' Oculta y formatea columnas del catalogo de productos.
     Private Sub ConfigurarColumnasProductos()
         If dgvProductos.Columns.Contains("ID_Producto") Then dgvProductos.Columns("ID_Producto").Visible = False
         If dgvProductos.Columns.Contains("Nombre") Then dgvProductos.Columns("Nombre").HeaderText = "Nombre"
@@ -842,7 +841,7 @@ Public Class Form2
         If dgvProductos.Columns.Contains("Categoria") Then dgvProductos.Columns("Categoria").HeaderText = "Categoria"
     End Sub
 
-    ' Documentacion: Asigna productos al grid y actualiza columnas e indicadores.
+    ' Asigna productos al grid y actualiza columnas e indicadores.
     Private Sub AplicarProductos(tabla As DataTable)
         dtProductos = If(tabla, CrearTablaProductosVacia())
         dgvProductos.DataSource = dtProductos
@@ -850,7 +849,7 @@ Public Class Form2
         ActualizarIndicadoresPOS()
     End Sub
 
-    ' Documentacion: Consulta el siguiente folio de venta y lo muestra en pantalla.
+    ' Consulta el siguiente folio de venta y lo muestra en pantalla.
     Private Sub ActualizarNumVenta()
         Try
             AplicarNumeroVenta(ObtenerEscalar("SELECT ISNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"))
@@ -861,7 +860,7 @@ Public Class Form2
         ActualizarIndicadoresPOS()
     End Sub
 
-    ' Documentacion: Convierte el folio recibido a texto de ticket visible.
+    ' Convierte el folio recibido a texto de ticket visible.
     Private Sub AplicarNumeroVenta(valor As Object)
         Dim num As Integer = 1
 
@@ -874,22 +873,22 @@ Public Class Form2
         ActualizarIndicadoresPOS()
     End Sub
 
-    ' Documentacion: Carga ventas para la fecha seleccionada.
+    ' Ejecuta el filtro del catalogo cuando se presiona buscar.
     Private Sub btnBuscar_Click(sender As Object, e As EventArgs) Handles btnBuscar.Click
         FiltrarProductos()
     End Sub
 
-    ' Documentacion: Filtra productos al escribir en el cuadro de busqueda.
+    ' Filtra productos al escribir en el cuadro de busqueda.
     Private Sub txtBuscar_TextChanged(sender As Object, e As EventArgs) Handles txtBuscar.TextChanged
         FiltrarProductos()
     End Sub
 
-    ' Documentacion: Filtra productos cuando cambia la categoria seleccionada.
+    ' Filtra productos cuando cambia la categoria seleccionada.
     Private Sub cbCategoria_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cbCategoria.SelectedIndexChanged
         FiltrarProductos()
     End Sub
 
-    ' Documentacion: Aplica filtros de nombre y categoria al DataView del catalogo.
+    ' Aplica filtros de nombre y categoria al DataView del catalogo.
     Private Sub FiltrarProductos()
         Dim texto As String = txtBuscar.Text.Trim().Replace("'", "''")
         Dim cat As String = cbCategoria.Text.Replace("'", "''")
@@ -902,7 +901,7 @@ Public Class Form2
         ActualizarIndicadoresPOS()
     End Sub
 
-    ' Documentacion: Valida producto y cantidad, agrega o acumula el articulo en el carrito.
+    ' Valida producto y cantidad, agrega o acumula el articulo en el carrito.
     Private Sub btnAgregar_Click(sender As Object, e As EventArgs) Handles btnAgregar.Click
         If dgvProductos.CurrentRow Is Nothing Then
             ModMensajes.Mostrar(Me, "Selecciona un producto", "Elige un producto del catalogo antes de agregarlo al ticket.", ModMensajes.TipoAviso.Advertencia)
@@ -943,7 +942,7 @@ Public Class Form2
         RecalcularTotales()
     End Sub
 
-    ' Documentacion: Quita del carrito la linea seleccionada.
+    ' Quita del carrito la linea seleccionada.
     Private Sub btnQuitar_Click(sender As Object, e As EventArgs) Handles btnQuitar.Click
         If dgvCarrito.CurrentRow Is Nothing Then
             ModMensajes.Mostrar(Me, "Selecciona un producto", "Elige un producto del carrito antes de quitar piezas.", ModMensajes.TipoAviso.Advertencia)
@@ -965,18 +964,18 @@ Public Class Form2
         RecalcularTotales()
     End Sub
 
-    ' Documentacion: Limpia el carrito completo y recalcula los totales.
+    ' Limpia el carrito completo y recalcula los totales.
     Private Sub btnLimpiar_Click(sender As Object, e As EventArgs) Handles btnLimpiar.Click
         dtCarrito.Rows.Clear()
         RecalcularTotales()
     End Sub
 
-    ' Documentacion: Recalcula los importes cuando cambia el porcentaje de descuento.
+    ' Recalcula los importes cuando cambia el porcentaje de descuento.
     Private Sub txtDescPct_TextChanged(sender As Object, e As EventArgs) Handles txtDescPct.TextChanged
         RecalcularTotales()
     End Sub
 
-    ' Documentacion: Suma los importes de todas las lineas del carrito.
+    ' Suma los importes de todas las lineas del carrito.
     Private Function CalcularSubtotal() As Decimal
         Dim subtotal As Decimal = 0D
         For Each row As DataRow In dtCarrito.Rows
@@ -987,7 +986,7 @@ Public Class Form2
         Return subtotal
     End Function
 
-    ' Documentacion: Lee y normaliza el porcentaje de descuento capturado.
+    ' Lee y normaliza el porcentaje de descuento capturado.
     Private Function ObtenerDescuentoPct() As Decimal
         Dim pct As Decimal = 0D
         Decimal.TryParse(txtDescPct.Text, pct)
@@ -996,7 +995,7 @@ Public Class Form2
         Return pct
     End Function
 
-    ' Documentacion: Suma todas las piezas contenidas en el carrito.
+    ' Suma todas las piezas contenidas en el carrito.
     Private Function ObtenerTotalPiezasCarrito() As Integer
         Dim total As Integer = 0
         For Each row As DataRow In dtCarrito.Rows
@@ -1007,13 +1006,13 @@ Public Class Form2
         Return total
     End Function
 
-    ' Documentacion: Calcula el IVA de la base gravable usando la tasa definida.
+    ' Calcula el IVA de la base gravable usando la tasa definida.
     Private Function CalcularIva(baseGravable As Decimal) As Decimal
         If baseGravable <= 0D Then Return 0D
         Return Math.Round(baseGravable * TASA_IVA, 2, MidpointRounding.AwayFromZero)
     End Function
 
-    ' Documentacion: Actualiza subtotal, descuento, total e indicadores del POS.
+    ' Actualiza subtotal, descuento, total e indicadores del POS.
     Private Sub RecalcularTotales()
         Dim subtotal As Decimal = CalcularSubtotal()
         Dim pct As Decimal = ObtenerDescuentoPct()
@@ -1030,7 +1029,7 @@ Public Class Form2
         ActualizarIndicadoresPOS()
     End Sub
 
-    ' Documentacion: Actualiza contadores visuales de categorias e items del carrito.
+    ' Actualiza contadores visuales de categorias e items del carrito.
     Private Sub ActualizarIndicadoresPOS()
         If lblBadgeProductosValue Is Nothing Then Return
 
@@ -1052,7 +1051,7 @@ Public Class Form2
         sbFecha.Text = ModEstilo.FormatoDiaFechaHora(Now)
     End Sub
 
-    ' Documentacion: Consulta pedidos próximos y muestra un aviso corto si hay entregas cercanas.
+    ' Consulta pedidos próximos y muestra un aviso corto si hay entregas cercanas.
     Private Sub RevisarRecordatoriosPedidos()
         If Me.IsDisposed OrElse pnlRecordatorioPedidos Is Nothing Then Return
 
@@ -1093,7 +1092,7 @@ Public Class Form2
         End Try
     End Sub
 
-    ' Documentacion: Presenta el aviso visual de pedido cercano durante unos segundos.
+    ' Presenta el aviso visual de pedido cercano durante unos segundos.
     Private Sub MostrarRecordatorioPedidos(idPedido As Integer, cliente As String, entrega As Date, diasRestantes As Integer, totalPedidos As Integer)
         If pnlRecordatorioPedidos Is Nothing Then Return
 
@@ -1118,18 +1117,18 @@ Public Class Form2
         tmrOcultarRecordatorioPedidos.Start()
     End Sub
 
-    ' Documentacion: Oculta el aviso temporal de pedidos.
+    ' Oculta el aviso temporal de pedidos.
     Private Sub OcultarRecordatorioPedidos(sender As Object, e As EventArgs)
         tmrOcultarRecordatorioPedidos.Stop()
         If pnlRecordatorioPedidos IsNot Nothing Then pnlRecordatorioPedidos.Visible = False
     End Sub
 
-    ' Documentacion: Revisa periodicamente pedidos cercanos mientras la caja esta abierta.
+    ' Revisa periodicamente pedidos cercanos mientras la caja esta abierta.
     Private Sub tmrRevisarRecordatoriosPedidos_Tick(sender As Object, e As EventArgs)
         RevisarRecordatoriosPedidos()
     End Sub
 
-    ' Documentacion: Muestra el dialogo de pago y devuelve metodo, pago recibido y cambio.
+    ' Muestra el dialogo de pago y devuelve metodo, pago recibido y cambio.
     Private Function SolicitarPago(subtotal As Decimal,
                                    descuento As Decimal,
                                    baseGravable As Decimal,
@@ -1551,7 +1550,7 @@ Public Class Form2
         End Using
     End Function
 
-    ' Documentacion: Muestra un aviso modal con estilo propio de la caja.
+    ' Muestra un aviso modal con estilo propio de la caja.
     Private Function MostrarAvisoPOS(titulo As String,
                                      mensaje As String,
                                      textoPrimario As String,
@@ -1671,7 +1670,7 @@ Public Class Form2
         End Using
     End Function
 
-    ' Documentacion: Intenta convertir texto de dinero con cultura actual, mexicana o invariante.
+    ' Intenta convertir texto de dinero con cultura actual, mexicana o invariante.
     Private Function TryParseMonto(valor As String, ByRef monto As Decimal) As Boolean
         Dim estilos As System.Globalization.NumberStyles =
             System.Globalization.NumberStyles.Number Or System.Globalization.NumberStyles.AllowCurrencySymbol
@@ -1683,7 +1682,7 @@ Public Class Form2
         Return False
     End Function
 
-    ' Documentacion: Calcula importes finales, solicita pago y guarda la venta.
+    ' Calcula importes finales, solicita pago y guarda la venta.
     Private Sub btnCobrar_Click(sender As Object, e As EventArgs) Handles btnCobrar.Click
         If dtCarrito.Rows.Count = 0 Then
             ModMensajes.Mostrar(Me, "Carrito vacio", "Agrega productos al ticket antes de cobrar.", ModMensajes.TipoAviso.Advertencia)
@@ -1705,7 +1704,7 @@ Public Class Form2
         GuardarVenta(subtotal, descuento, baseGravable, iva, total, metodoPago, pagoCon, cambio)
     End Sub
 
-    ' Documentacion: Guarda el pedido y detalle en una transaccion, descuenta stock y ofrece imprimir ticket.
+    ' Guarda el pedido y detalle en una transaccion, descuenta stock y ofrece imprimir ticket.
     Private Sub GuardarVenta(subtotal As Decimal,
                              descuento As Decimal,
                              baseGravable As Decimal,
@@ -1808,14 +1807,14 @@ Public Class Form2
         ActualizarNumVenta()
     End Sub
 
-    ' Documentacion: Pide confirmacion y cierra la aplicacion de caja.
+    ' Pide confirmacion y cierra la aplicacion de caja.
     Private Sub btnSalida_Click(sender As Object, e As EventArgs) Handles btnSalida.Click
         If ModMensajes.Confirmar(Me, "Cerrar caja", "Deseas salir del sistema de caja?", "Salir", "Seguir aqui", ModMensajes.TipoAviso.Advertencia) Then
             Application.Exit()
         End If
     End Sub
 
-    ' Documentacion: Quita suscripciones a eventos antes de cerrar la caja.
+    ' Quita suscripciones a eventos antes de cerrar la caja.
     Private Sub Form2_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.InventarioActualizado, AddressOf RefrescarInventario
         RemoveHandler ModActualizaciones.VentasActualizadas, AddressOf RefrescarVentas
@@ -1824,7 +1823,7 @@ Public Class Form2
         If tmrRevisarRecordatoriosPedidos IsNot Nothing Then tmrRevisarRecordatoriosPedidos.Stop()
     End Sub
 
-    ' Documentacion: Obtiene el texto del ticket y abre la vista previa de impresion.
+    ' Obtiene el texto del ticket y abre la vista previa de impresion.
     Private Sub ImprimirTicketVenta(idPedido As Integer)
         Try
             Dim texto = Form6.ObtenerTextoTicket(idPedido)

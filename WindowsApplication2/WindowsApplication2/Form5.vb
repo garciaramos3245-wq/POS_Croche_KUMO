@@ -1,4 +1,3 @@
-' Archivo: Form5.vb.
 ' Administra pedidos especiales y su informacion de cliente, entrega, saldo y estado.
 
 Imports System.Data
@@ -7,7 +6,7 @@ Imports System.Globalization
 
 Public Class Form5
 
-    ' Documentacion: Paleta visual y folio seleccionado para editar pedidos.
+    ' Paleta visual y folio seleccionado para editar pedidos.
 
     Private ReadOnly CLR_BG_PREMIUM As Color = Color.FromArgb(244, 240, 234)
     Private ReadOnly CLR_SURFACE_PREMIUM As Color = Color.FromArgb(255, 252, 247)
@@ -16,7 +15,7 @@ Public Class Form5
     Private ReadOnly CLR_MUTED_PREMIUM As Color = Color.FromArgb(136, 118, 94)
     Private ReadOnly CLR_DARK_PREMIUM As Color = Color.FromArgb(46, 52, 60)
 
-    ' Documentacion: Inicializa el formulario y aplica configuracion visual inicial.
+    ' Inicializa el formulario y aplica configuracion visual inicial.
     Public Sub New()
         InitializeComponent()
         ConfigurarSelectorEntrega()
@@ -36,7 +35,7 @@ Public Class Form5
     Private lblHoraTxt As Label
     Private dtpHoraEntrega As DateTimePicker
 
-    ' Documentacion: Prepara la ventana, escucha cambios de pedidos y carga la agenda.
+    ' Prepara la ventana, escucha cambios de pedidos y carga la agenda.
     Private Sub Form5_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ModEstilo.PrepararVentana(Me)
         AddHandler ModActualizaciones.PedidosActualizados, AddressOf RefrescarPedidos
@@ -46,7 +45,7 @@ Public Class Form5
         AplicarDisenoPedidos()
     End Sub
 
-    ' Documentacion: Aplica estilos y layout al formulario de pedidos.
+    ' Aplica estilos y layout al formulario de pedidos.
     Private Sub AplicarDisenoPedidos()
         ModEstilo.EstilarControles(Me)
         ModEstilo.EstilarStatusStrip(StatusStrip1)
@@ -60,7 +59,7 @@ Public Class Form5
         ConfigurarLayoutPedidos()
     End Sub
 
-    ' Documentacion: Configura textos, colores, campos, tabla y botones de pedidos.
+    ' Configura textos, colores, campos, tabla y botones de pedidos.
     Private Sub AplicarEstiloPedidosPremium()
         Me.BackColor = CLR_BG_PREMIUM
         Me.Text = "KUMO | Pedidos"
@@ -155,7 +154,7 @@ Public Class Form5
         btnRegresar.FlatAppearance.MouseOverBackColor = Color.FromArgb(57, 64, 73)
     End Sub
 
-    ' Documentacion: Separa la captura de dia y hora sin cambiar el campo guardado.
+    ' Separa la captura de dia y hora sin cambiar el campo guardado.
     Private Sub ConfigurarSelectorEntrega()
         If lblHoraTxt Is Nothing Then
             lblHoraTxt = New Label() With {
@@ -181,7 +180,7 @@ Public Class Form5
         dtpHoraEntrega.CustomFormat = "h:mm tt"
     End Sub
 
-    ' Documentacion: Acomoda formulario de pedido y lista segun el tamano disponible.
+    ' Acomoda formulario de pedido y lista segun el tamano disponible.
     Private Sub ConfigurarLayoutPedidos()
         Dim margen As Integer = 18
         Dim top As Integer = 14
@@ -250,24 +249,24 @@ Public Class Form5
         btnRegresar.Anchor = AnchorStyles.Top Or AnchorStyles.Right
     End Sub
 
-    ' Documentacion: Actualiza el saldo cuando cambia el precio final.
+    ' Actualiza el saldo cuando cambia el precio final.
     Private Sub txtPrecio_TextChanged(sender As Object, e As EventArgs) Handles txtPrecio.TextChanged
         CalcSaldo()
     End Sub
 
-    ' Documentacion: Actualiza el saldo cuando cambia el anticipo.
+    ' Actualiza el saldo cuando cambia el anticipo.
     Private Sub txtAnticipo_TextChanged(sender As Object, e As EventArgs) Handles txtAnticipo.TextChanged
         CalcSaldo()
     End Sub
 
-    ' Documentacion: Calcula saldo pendiente restando anticipo al precio.
+    ' Calcula saldo pendiente restando anticipo al precio.
     Private Sub CalcSaldo()
         Dim p As Decimal = LeerDecimal(txtPrecio.Text)
         Dim a As Decimal = LeerDecimal(txtAnticipo.Text)
         txtSaldo.Text = (p - a).ToString("N2")
     End Sub
 
-    ' Documentacion: Carga la agenda de pedidos desde PEDIDOS y CLIENTES.
+    ' Carga la agenda de pedidos desde PEDIDOS y CLIENTES.
     Private Sub CargarPedidos()
         Try
             AsegurarColumnasDetallePedido()
@@ -292,7 +291,7 @@ Public Class Form5
         End Try
     End Sub
 
-    ' Documentacion: Ajusta formato de importes y tamanos utiles en la agenda.
+    ' Ajusta formato de importes y tamanos utiles en la agenda.
     Private Sub FormatearColumnasPedidos()
         If dgv.Columns.Contains("Cliente") Then dgv.Columns("Cliente").MinimumWidth = 150
         If dgv.Columns.Contains("Dia") Then dgv.Columns("Dia").MinimumWidth = 105
@@ -300,17 +299,17 @@ Public Class Form5
         If dgv.Columns.Contains("Hora") Then dgv.Columns("Hora").MinimumWidth = 90
     End Sub
 
-    ' Documentacion: Carga el detalle del pedido con doble clic en la tabla.
+    ' Carga el detalle del pedido con doble clic en la tabla.
     Private Sub dgv_DoubleClick(sender As Object, e As EventArgs) Handles dgv.DoubleClick
         CargarDetalle()
     End Sub
 
-    ' Documentacion: Carga el detalle del pedido seleccionado.
+    ' Carga el detalle del pedido seleccionado.
     Private Sub btnCargar_Click(sender As Object, e As EventArgs) Handles btnCargar.Click
         CargarDetalle()
     End Sub
 
-    ' Documentacion: Consulta el detalle de productos de la venta seleccionada.
+    ' Consulta el detalle de productos de la venta seleccionada.
     Private Sub CargarDetalle()
         If dgv.CurrentRow Is Nothing Then Return
         idSeleccionado = CInt(dgv.CurrentRow.Cells("ID_Pedido").Value)
@@ -361,19 +360,19 @@ Public Class Form5
         End Try
     End Sub
 
-    ' Documentacion: Lee texto opcional de una columna de pedido sin mostrar valores nulos.
+    ' Lee texto opcional de una columna de pedido sin mostrar valores nulos.
     Private Function TextoColumna(row As DataRow, columna As String) As String
         If row Is Nothing OrElse Not row.Table.Columns.Contains(columna) OrElse IsDBNull(row(columna)) Then Return ""
         Return row(columna).ToString()
     End Function
 
-    ' Documentacion: Lee importes opcionales de una columna de pedido.
+    ' Lee importes opcionales de una columna de pedido.
     Private Function ValorDecimal(row As DataRow, columna As String) As Decimal
         If row Is Nothing OrElse Not row.Table.Columns.Contains(columna) OrElse IsDBNull(row(columna)) Then Return 0D
         Return Convert.ToDecimal(row(columna))
     End Function
 
-    ' Documentacion: Interpreta importes capturados aunque usen simbolos o separadores locales.
+    ' Interpreta importes capturados aunque usen simbolos o separadores locales.
     Private Function LeerDecimal(texto As String) As Decimal
         Dim valor As Decimal
         Dim limpio As String = If(texto, "").Trim()
@@ -384,19 +383,19 @@ Public Class Form5
         Return 0D
     End Function
 
-    ' Documentacion: Combina el dia y la hora separados en el valor unico que usa la base.
+    ' Combina el dia y la hora separados en el valor unico que usa la base.
     Private Function ObtenerFechaHoraEntrega() As DateTime
         Dim horaBase As DateTime = If(dtpHoraEntrega Is Nothing, dtpEntrega.Value, dtpHoraEntrega.Value)
         Return dtpEntrega.Value.Date.Add(New TimeSpan(horaBase.Hour, horaBase.Minute, 0))
     End Function
 
-    ' Documentacion: Al cargar un pedido reparte el valor guardado entre los dos controles.
+    ' Al cargar un pedido reparte el valor guardado entre los dos controles.
     Private Sub AplicarFechaHoraEntrega(fechaHora As DateTime)
         dtpEntrega.Value = fechaHora
         If dtpHoraEntrega IsNot Nothing Then dtpHoraEntrega.Value = fechaHora
     End Sub
 
-    ' Documentacion: Limpia la ficha para capturar un producto nuevo.
+    ' Limpia la ficha para capturar un producto nuevo.
     Private Sub btnNuevo_Click(sender As Object, e As EventArgs) Handles btnNuevo.Click
         idSeleccionado = 0
         txtNombre.Clear()
@@ -415,7 +414,7 @@ Public Class Form5
         txtNombre.Focus()
     End Sub
 
-    ' Documentacion: Normaliza el estado o metodo guardado para el pedido.
+    ' Normaliza el estado o metodo guardado para el pedido.
     Private Function ObtenerMetodoPedido() As String
         Dim metodo As String = cbEstado.Text.Trim()
         If metodo = "" Then metodo = "Pendiente"
@@ -423,14 +422,14 @@ Public Class Form5
         Return metodo
     End Function
 
-    ' Documentacion: Agrega texto largo de pedido y permite limpiar el dato guardando nulo.
+    ' Agrega texto largo de pedido y permite limpiar el dato guardando nulo.
     Private Sub AgregarParametroTexto(cmd As SqlCommand, nombre As String, valor As String)
         Dim limpio As String = If(valor, "").Trim()
         Dim parametro = cmd.Parameters.Add(nombre, SqlDbType.NVarChar, -1)
         parametro.Value = If(limpio = "", CType(DBNull.Value, Object), limpio)
     End Sub
 
-    ' Documentacion: Agrega importes con precision consistente para SQL Server.
+    ' Agrega importes con precision consistente para SQL Server.
     Private Sub AgregarParametroDecimal(cmd As SqlCommand, nombre As String, valor As Decimal)
         Dim parametro = cmd.Parameters.Add(nombre, SqlDbType.Decimal)
         parametro.Precision = 10
@@ -438,7 +437,7 @@ Public Class Form5
         parametro.Value = valor
     End Sub
 
-    ' Documentacion: Valida y guarda un producto nuevo o actualiza uno existente junto con su stock.
+    ' Valida y guarda un producto nuevo o actualiza uno existente junto con su stock.
     Private Sub btnGuardar_Click(sender As Object, e As EventArgs) Handles btnGuardar.Click
         If txtNombre.Text.Trim() = "" Then
             ModMensajes.Mostrar(Me, "Dato faltante", "Escribe el nombre del cliente antes de guardar.", ModMensajes.TipoAviso.Advertencia)
@@ -520,7 +519,7 @@ Public Class Form5
         btnNuevo_Click(Nothing, Nothing)
     End Sub
 
-    ' Documentacion: Confirma y elimina el producto seleccionado junto con su inventario.
+    ' Confirma y elimina el producto seleccionado junto con su inventario.
     Private Sub btnEliminar_Click(sender As Object, e As EventArgs) Handles btnEliminar.Click
         If idSeleccionado = 0 Then
             ModMensajes.Mostrar(Me, "Selecciona un pedido", "Elige un pedido de la lista antes de eliminarlo.", ModMensajes.TipoAviso.Advertencia)
@@ -547,23 +546,23 @@ Public Class Form5
         btnNuevo_Click(Nothing, Nothing)
     End Sub
 
-    ' Documentacion: Cierra el formulario actual.
+    ' Cierra el formulario actual.
     Private Sub btnRegresar_Click(sender As Object, e As EventArgs) Handles btnRegresar.Click
         Me.Close()
     End Sub
 
-    ' Documentacion: Recarga pedidos despues de cambios externos.
+    ' Recarga pedidos despues de cambios externos.
     Private Sub RefrescarPedidos()
         If Me.IsDisposed Then Return
         CargarPedidos()
     End Sub
 
-    ' Documentacion: Quita la suscripcion al evento de pedidos al cerrar.
+    ' Quita la suscripcion al evento de pedidos al cerrar.
     Private Sub Form5_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         RemoveHandler ModActualizaciones.PedidosActualizados, AddressOf RefrescarPedidos
     End Sub
 
-    ' Documentacion: Reacomoda pedidos al cambiar el tamano.
+    ' Reacomoda pedidos al cambiar el tamano.
     Private Sub Form5_Resize(sender As Object, e As EventArgs) Handles MyBase.Resize
         If Not Me.Visible Then Return
         If Me.WindowState = FormWindowState.Minimized Then Return

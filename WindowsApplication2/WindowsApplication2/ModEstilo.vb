@@ -1,4 +1,3 @@
-' Archivo: ModEstilo.vb.
 ' Centraliza colores, fuentes, iconos, logos, esquinas redondeadas y ajustes visuales comunes.
 
 Imports System.Drawing
@@ -10,7 +9,7 @@ Imports System.Windows.Forms
 
 Module ModEstilo
 
-    ' Documentacion: Paleta, caches de recursos y estado interno usados por los helpers visuales.
+    ' Paleta, caches de recursos y estado interno usados por los helpers visuales.
 
     Public ReadOnly CLR_BG As Color = Color.FromArgb(245, 247, 250)
     Public ReadOnly CLR_SURFACE As Color = Color.FromArgb(232, 239, 248)
@@ -35,13 +34,13 @@ Module ModEstilo
     Private _rutaIconoEvaluada As Boolean = False
     Private ReadOnly _relojesStatus As New Dictionary(Of Form, Timer)
 
-    ' Documentacion: Convierte una fecha a texto con dia, mes, anio y hora en formato a.m./p.m.
+    ' Convierte una fecha a texto con dia, mes, anio y hora en formato a.m./p.m.
     Public Function FormatoFechaHora24(valor As DateTime) As String
         Dim sufijo As String = If(valor.Hour < 12, "a.m.", "p.m.")
         Return valor.ToString("dd/MM/yyyy") & "  " & valor.ToString("h:mm") & " " & sufijo
     End Function
 
-    ' Documentacion: Convierte una fecha a texto con dia, fecha y hora para las barras inferiores.
+    ' Convierte una fecha a texto con dia, fecha y hora para las barras inferiores.
     Public Function FormatoDiaFechaHora(valor As DateTime) As String
         Dim cultura = CultureInfo.GetCultureInfo("es-MX")
         Dim dia = cultura.TextInfo.ToTitleCase(valor.ToString("dddd", cultura))
@@ -49,7 +48,7 @@ Module ModEstilo
         Return dia & " " & valor.ToString("dd/MM/yyyy") & " " & valor.ToString("h:mm") & " " & sufijo
     End Function
 
-    ' Documentacion: Detecta si el codigo se esta ejecutando dentro del disenador de Visual Studio.
+    ' Detecta si el codigo se esta ejecutando dentro del disenador de Visual Studio.
     Public Function EstaEnModoDisenio(ctrl As Control) As Boolean
         If LicenseManager.UsageMode = LicenseUsageMode.Designtime Then
             Return True
@@ -72,7 +71,7 @@ Module ModEstilo
         Return False
     End Function
 
-    ' Documentacion: Suspende el layout, aplica una accion visual y protege el disenador ante errores de recursos.
+    ' Suspende el layout, aplica una accion visual y protege el disenador ante errores de recursos.
     Public Sub AplicarTemaConsistente(frm As Form, accion As Action)
         If frm Is Nothing OrElse accion Is Nothing Then Return
         Try
@@ -86,7 +85,7 @@ Module ModEstilo
         End Try
     End Sub
 
-    ' Documentacion: Importa la funcion de Windows que crea regiones con esquinas redondeadas.
+    ' Importa la funcion de Windows que crea regiones con esquinas redondeadas.
     <DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
     Private Function CreateRoundRectRgn(
         ByVal nLeftRect As Integer,
@@ -98,12 +97,12 @@ Module ModEstilo
     ) As IntPtr
     End Function
 
-    ' Documentacion: Libera objetos GDI creados al aplicar regiones redondeadas.
+    ' Libera objetos GDI creados al aplicar regiones redondeadas.
     <DllImport("gdi32.dll")>
     Private Function DeleteObject(hObject As IntPtr) As Boolean
     End Function
 
-    ' Documentacion: Configura un formulario sin borde, con icono, tamano inicial y reaccion al cambio de tamano.
+    ' Configura un formulario sin borde, con icono, tamano inicial y reaccion al cambio de tamano.
     Public Sub PrepararVentana(frm As Form, Optional radius As Integer = 0, Optional pantallaCompleta As Boolean = True)
         frm.FormBorderStyle = FormBorderStyle.None
         frm.BackColor = CLR_BG
@@ -134,7 +133,7 @@ Module ModEstilo
             End Sub
     End Sub
 
-    ' Documentacion: Ajusta el formulario para ocupar toda la pantalla donde se muestra.
+    ' Ajusta el formulario para ocupar toda la pantalla donde se muestra.
     Public Sub ExpandirFormulario(frm As Form)
         Dim area = Screen.FromControl(frm).Bounds
         frm.StartPosition = FormStartPosition.Manual
@@ -142,7 +141,7 @@ Module ModEstilo
         frm.Bounds = area
     End Sub
 
-    ' Documentacion: Recorre todos los controles del formulario y aplica el estilo visual base segun su tipo.
+    ' Recorre todos los controles del formulario y aplica el estilo visual base segun su tipo.
     Public Sub EstilarControles(frm As Form)
         frm.BackColor = CLR_BG
         frm.ForeColor = CLR_TEXT
@@ -203,7 +202,7 @@ Module ModEstilo
         AsegurarMarcaFormulario(frm)
     End Sub
 
-    ' Documentacion: Aplica estilo de accion principal a un boton.
+    ' Aplica estilo de accion principal a un boton.
     Public Sub EstilarBotonPrimario(btn As Button)
         btn.BackColor = CLR_HEADER
         btn.ForeColor = Color.White
@@ -215,7 +214,7 @@ Module ModEstilo
         btn.UseVisualStyleBackColor = False
     End Sub
 
-    ' Documentacion: Aplica estilo de accion peligrosa o destructiva a un boton.
+    ' Aplica estilo de accion peligrosa o destructiva a un boton.
     Public Sub EstilarBotonPeligro(btn As Button)
         btn.BackColor = CLR_RED
         btn.ForeColor = Color.White
@@ -227,7 +226,7 @@ Module ModEstilo
         btn.UseVisualStyleBackColor = False
     End Sub
 
-    ' Documentacion: Aplica estilo secundario con borde a un boton.
+    ' Aplica estilo secundario con borde a un boton.
     Public Sub EstilarBotonSecundario(btn As Button)
         btn.BackColor = CLR_SURFACE
         btn.ForeColor = CLR_TEXT
@@ -240,7 +239,7 @@ Module ModEstilo
         btn.UseVisualStyleBackColor = False
     End Sub
 
-    ' Documentacion: Aplica el estilo destacado del boton de cobro.
+    ' Aplica el estilo destacado del boton de cobro.
     Public Sub EstilarBotonCobrar(btn As Button)
         btn.BackColor = CLR_ACCENT2
         btn.ForeColor = Color.White
@@ -252,7 +251,7 @@ Module ModEstilo
         btn.UseVisualStyleBackColor = False
     End Sub
 
-    ' Documentacion: Da formato a la barra inferior de estado.
+    ' Da formato a la barra inferior de estado.
     Public Sub EstilarStatusStrip(ss As StatusStrip)
         ss.BackColor = CLR_HEADER
         ss.SizingGrip = False
@@ -262,7 +261,7 @@ Module ModEstilo
         Next
     End Sub
 
-    ' Documentacion: Agrega y mantiene actualizado el reloj de dia, fecha y hora en una barra inferior.
+    ' Agrega y mantiene actualizado el reloj de dia, fecha y hora en una barra inferior.
     Public Sub ConfigurarRelojStatusStrip(frm As Form, ss As StatusStrip, Optional nombreEtiqueta As String = "sbFechaKumo")
         If frm Is Nothing OrElse ss Is Nothing OrElse EstaEnModoDisenio(frm) Then Return
 
@@ -317,7 +316,7 @@ Module ModEstilo
         reloj.Start()
     End Sub
 
-    ' Documentacion: Da formato al menu superior y sus subopciones.
+    ' Da formato al menu superior y sus subopciones.
     Public Sub EstilarMenuStrip(ms As MenuStrip)
         ms.BackColor = CLR_HEADER
         ms.ForeColor = Color.White
@@ -342,7 +341,7 @@ Module ModEstilo
         Next
     End Sub
 
-    ' Documentacion: Aplica formato comun a tablas DataGridView.
+    ' Aplica formato comun a tablas DataGridView.
     Public Sub EstilarDGV(dgv As DataGridView)
         dgv.BackgroundColor = CLR_CARD
         dgv.BorderStyle = BorderStyle.FixedSingle
@@ -375,7 +374,7 @@ Module ModEstilo
         dgv.AlternatingRowsDefaultCellStyle.SelectionForeColor = CLR_TEXT
     End Sub
 
-    ' Documentacion: Carga el logo desde Assets, lo guarda en cache y lo asigna a un PictureBox.
+    ' Carga el logo desde Assets, lo guarda en cache y lo asigna a un PictureBox.
     Public Sub CargarLogo(pb As PictureBox)
         If pb Is Nothing Then Return
         Dim logoPath = ObtenerRutaLogo()
@@ -406,7 +405,7 @@ Module ModEstilo
         End Try
     End Sub
 
-    ' Documentacion: Aplica color, fuente y esquinas redondeadas a un GroupBox.
+    ' Aplica color, fuente y esquinas redondeadas a un GroupBox.
     Private Sub EstilarGroupBox(gb As GroupBox)
         If gb.Name = "gbCancelar" Then
             gb.BackColor = CLR_RED_SOFT
@@ -420,7 +419,7 @@ Module ModEstilo
         AplicarEsquinasRedondeadas(gb, 18)
     End Sub
 
-    ' Documentacion: Aplica color y redondeo a paneles, incluyendo paneles de metricas.
+    ' Aplica color y redondeo a paneles, incluyendo paneles de metricas.
     Private Sub EstilarPanel(pnl As Panel)
         Dim esMetrica = pnl.Name.StartsWith("pnlIngresos") OrElse
                         pnl.Name.StartsWith("pnlVentas") OrElse
@@ -436,7 +435,7 @@ Module ModEstilo
         AplicarEsquinasRedondeadas(pnl, 18)
     End Sub
 
-    ' Documentacion: Aplica fuentes y colores a etiquetas segun su nombre y uso.
+    ' Aplica fuentes y colores a etiquetas segun su nombre y uso.
     Private Sub EstilarLabel(lbl As Label)
         lbl.BackColor = Color.Transparent
         lbl.ForeColor = CLR_MUTED
@@ -468,7 +467,7 @@ Module ModEstilo
         End If
     End Sub
 
-    ' Documentacion: Da formato a campos de texto editables o de solo lectura.
+    ' Da formato a campos de texto editables o de solo lectura.
     Private Sub EstilarTextBox(tb As TextBox)
         tb.Font = New Font("Segoe UI", 9.5F)
         tb.BorderStyle = BorderStyle.FixedSingle
@@ -480,7 +479,7 @@ Module ModEstilo
         End If
     End Sub
 
-    ' Documentacion: Da formato a listas desplegables.
+    ' Da formato a listas desplegables.
     Private Sub EstilarCombo(cb As ComboBox)
         cb.Font = New Font("Segoe UI", 9.0F)
         cb.FlatStyle = FlatStyle.Flat
@@ -488,7 +487,7 @@ Module ModEstilo
         cb.ForeColor = CLR_TEXT
     End Sub
 
-    ' Documentacion: Aplica estilo base a botones antes de variantes mas especificas.
+    ' Aplica estilo base a botones antes de variantes mas especificas.
     Private Sub EstilarBotonBase(btn As Button)
         btn.Font = New Font("Segoe UI", 9.0F)
         btn.FlatStyle = FlatStyle.Flat
@@ -501,7 +500,7 @@ Module ModEstilo
         btn.UseVisualStyleBackColor = False
     End Sub
 
-    ' Documentacion: Ajusta colores de etiquetas de metricas importantes.
+    ' Ajusta colores de etiquetas de metricas importantes.
     Private Sub EstilarEtiquetasEspeciales(frm As Form)
         For Each ctrl As Control In ObtenerTodos(frm)
             Dim lbl = TryCast(ctrl, Label)
@@ -514,7 +513,7 @@ Module ModEstilo
         Next
     End Sub
 
-    ' Documentacion: Crea o actualiza la marca KUMO flotante en formularios secundarios.
+    ' Crea o actualiza la marca KUMO flotante en formularios secundarios.
     Private Sub AsegurarMarcaFormulario(frm As Form)
         If frm.Name = "Form1" OrElse frm.Name = "Form2" OrElse frm.Name = "Form5" OrElse frm.Name = "Form6" Then Return
 
@@ -564,7 +563,7 @@ Module ModEstilo
         AplicarEsquinasRedondeadas(pnl, 18)
     End Sub
 
-    ' Documentacion: Coloca la marca KUMO cerca del borde superior sin tapar botones principales.
+    ' Coloca la marca KUMO cerca del borde superior sin tapar botones principales.
     Private Sub ReubicarMarca(frm As Form)
         Dim pnl = TryCast(frm.Controls("pnlKumoBrand"), Panel)
         If pnl Is Nothing Then Return
@@ -586,7 +585,7 @@ Module ModEstilo
         pnl.BringToFront()
     End Sub
 
-    ' Documentacion: Busca un control directo del formulario por nombre.
+    ' Busca un control directo del formulario por nombre.
     Private Function BuscarControlSuperior(frm As Form, nombre As String) As Control
         For Each ctrl As Control In frm.Controls
             If ctrl.Name = nombre Then Return ctrl
@@ -594,7 +593,7 @@ Module ModEstilo
         Return Nothing
     End Function
 
-    ' Documentacion: Carga el icono de la aplicacion y lo asigna al formulario.
+    ' Carga el icono de la aplicacion y lo asigna al formulario.
     Private Sub AplicarIcono(frm As Form)
         Dim ruta = ObtenerRutaIcono()
         If ruta = "" Then Return
@@ -610,7 +609,7 @@ Module ModEstilo
         frm.Icon = CType(_iconoCache.Clone(), Icon)
     End Sub
 
-    ' Documentacion: Devuelve el color de fondo segun el tipo de panel de metrica.
+    ' Devuelve el color de fondo segun el tipo de panel de metrica.
     Private Function ObtenerColorPanel(nombre As String) As Color
         If nombre.Contains("Ingresos") Then Return CLR_GREEN_SOFT
         If nombre.Contains("Ventas") Then Return Color.FromArgb(239, 246, 255)
@@ -618,7 +617,7 @@ Module ModEstilo
         Return Color.FromArgb(240, 247, 255)
     End Function
 
-    ' Documentacion: Devuelve el subtitulo de marca que corresponde a cada formulario.
+    ' Devuelve el subtitulo de marca que corresponde a cada formulario.
     Private Function ObtenerSubtituloMarca(nombreFormulario As String) As String
         Select Case nombreFormulario
             Case "Form3"
@@ -636,7 +635,7 @@ Module ModEstilo
         End Select
     End Function
 
-    ' Documentacion: Dibuja el fondo decorativo suave de los formularios.
+    ' Dibuja el fondo decorativo suave de los formularios.
     Private Sub PintarFondoKumo(sender As Object, e As PaintEventArgs)
         Dim frm = TryCast(sender, Form)
         If frm Is Nothing Then Return
@@ -655,7 +654,7 @@ Module ModEstilo
         End Using
     End Sub
 
-    ' Documentacion: Devuelve todos los controles hijos de un control de forma recursiva.
+    ' Devuelve todos los controles hijos de un control de forma recursiva.
     Private Function ObtenerTodos(parent As Control) As List(Of Control)
         Dim lista As New List(Of Control)
         For Each ctrl As Control In parent.Controls
@@ -667,7 +666,7 @@ Module ModEstilo
         Return lista
     End Function
 
-    ' Documentacion: Busca el archivo de logo en las rutas posibles de ejecucion y desarrollo.
+    ' Busca el archivo de logo en las rutas posibles de ejecucion y desarrollo.
     Private Function ObtenerRutaLogo() As String
         If _rutaLogoEvaluada Then Return _rutaLogo
 
@@ -691,7 +690,7 @@ Module ModEstilo
         Return ""
     End Function
 
-    ' Documentacion: Busca el archivo de icono en las rutas posibles de ejecucion y desarrollo.
+    ' Busca el archivo de icono en las rutas posibles de ejecucion y desarrollo.
     Private Function ObtenerRutaIcono() As String
         If _rutaIconoEvaluada Then Return _rutaIcono
 
@@ -715,7 +714,7 @@ Module ModEstilo
         Return ""
     End Function
 
-    ' Documentacion: Aplica o limpia la region redondeada de un formulario.
+    ' Aplica o limpia la region redondeada de un formulario.
     Private Sub AplicarRegionFormulario(frm As Form, radius As Integer)
         If radius <= 0 Then
             frm.Region = Nothing
@@ -725,7 +724,7 @@ Module ModEstilo
         AplicarEsquinasRedondeadas(frm, radius)
     End Sub
 
-    ' Documentacion: Asigna una region redondeada a cualquier control con tamano valido.
+    ' Asigna una region redondeada a cualquier control con tamano valido.
     Private Sub AplicarEsquinasRedondeadas(ctrl As Control, radius As Integer)
         If ctrl.Width <= 0 OrElse ctrl.Height <= 0 Then Return
 
