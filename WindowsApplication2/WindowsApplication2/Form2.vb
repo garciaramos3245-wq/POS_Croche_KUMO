@@ -1,7 +1,7 @@
 ' Administra el punto de venta: catalogo, carrito, cobro, guardado de ventas y navegacion.
 
 Imports System.Runtime.InteropServices
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 Imports System.Drawing.Printing
 
 Public Class Form2
@@ -169,14 +169,14 @@ Public Class Form2
                                              End Function)
             If validacion <> "" Then
                 lblNumVenta.Text = "Ticket #V-001"
-                sbInfo.Text = "   SQL Server Express no esta listo."
+                sbInfo.Text = "   La base local SQLite no esta lista."
                 ModMensajes.Mostrar(Me, "Conexion no disponible", validacion, ModMensajes.TipoAviso.Error)
                 Return
             End If
 
             Dim sqlCategorias = "SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat"
             Dim sqlProductos = ObtenerSqlProductos()
-            Dim sqlNumVenta = "SELECT ISNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"
+            Dim sqlNumVenta = "SELECT IFNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"
 
             Dim categoriasTask = Task.Run(Function() ObtenerTabla(sqlCategorias))
             Dim productosTask = Task.Run(Function() ObtenerTabla(sqlProductos))
@@ -821,7 +821,7 @@ Public Class Form2
     ' Construye el SELECT principal para listar productos, stock y categoria.
     Private Function ObtenerSqlProductos() As String
         Return "SELECT p.Id_Producto AS ID_Producto, p.NombrePr AS Nombre, p.Precio, " &
-               "ISNULL(i.cant_disp, 0) AS Stock, c.NombreCat AS Categoria " &
+               "IFNULL(i.cant_disp, 0) AS Stock, c.NombreCat AS Categoria " &
                "FROM PRODUCTO p " &
                "LEFT JOIN INVENTARIO i ON i.Id_Producto = p.Id_Producto " &
                "LEFT JOIN " & TablaCategorias() & " c ON c.Id_Categoria = p.Id_Categoria " &
@@ -868,7 +868,7 @@ Public Class Form2
     ' Consulta el siguiente folio de venta y lo muestra en pantalla.
     Private Sub ActualizarNumVenta()
         Try
-            AplicarNumeroVenta(ObtenerEscalar("SELECT ISNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"))
+            AplicarNumeroVenta(ObtenerEscalar("SELECT IFNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"))
         Catch ex As Exception
             lblNumVenta.Text = "Ticket #V-001"
         End Try
@@ -1075,19 +1075,19 @@ Public Class Form2
             Dim hoy As Date = Today
             Dim limite As Date = hoy.AddDays(2)
             Dim tabla = ObtenerTabla(
-                "SELECT TOP 1 p.Id_Pedido, " &
-                "RTRIM(LTRIM(c.Nombres_cl + ' ' + ISNULL(c.Apellidos,''))) AS Cliente, " &
+                "SELECT p.Id_Pedido, " &
+                "TRIM(c.Nombres_cl || ' ' || IFNULL(c.Apellidos,'')) AS Cliente, " &
                 "p.Fecha AS Entrega, " &
-                "DATEDIFF(day, @hoy, CAST(p.Fecha AS date)) AS DiasRestantes, " &
+                "CAST(julianday(date(p.Fecha)) - julianday(date(@hoy)) AS INTEGER) AS DiasRestantes, " &
                 "COUNT(*) OVER() AS TotalPedidos " &
                 "FROM PEDIDOS p " &
                 "INNER JOIN CLIENTES c ON c.ID_CLIENTE = p.ID_CLIENTE " &
-                "WHERE CAST(p.Fecha AS date) BETWEEN @hoy AND @limite " &
+                "WHERE date(p.Fecha) BETWEEN date(@hoy) AND date(@limite) " &
                 "AND NOT EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
-                "AND ISNULL(p.MetodoPago, 'Pendiente') IN ('Pendiente', 'En proceso', 'Listo para entregar') " &
-                "ORDER BY p.Fecha, p.Id_Pedido",
-                New SqlParameter("@hoy", hoy),
-                New SqlParameter("@limite", limite))
+                "AND IFNULL(p.MetodoPago, 'Pendiente') IN ('Pendiente', 'En proceso', 'Listo para entregar') " &
+                "ORDER BY p.Fecha, p.Id_Pedido LIMIT 1",
+                New SQLiteParameter("@hoy", hoy),
+                New SQLiteParameter("@limite", limite))
 
             If tabla.Rows.Count = 0 Then Return
 
@@ -1739,16 +1739,16 @@ Public Class Form2
         End Try
 
         Using cn = ObtenerConexion()
-            Dim trans As SqlTransaction = Nothing
+            Dim trans As SQLiteTransaction = Nothing
             Try
                 cn.Open()
                 trans = cn.BeginTransaction()
                 Dim idCliente As Integer = ObtenerIdClienteGeneral(trans)
 
-                Using cmdPedido As New SqlCommand(
+                Using cmdPedido As New SQLiteCommand(
                     "INSERT INTO PEDIDOS (ID_CLIENTE, Fecha, Subtotal, Descuento, BaseGravable, IVA, TasaIVA, Total, MetodoPago, PagoCon, Cambio, Cancelada) " &
                     "VALUES (@idCliente, @fecha, @subtotal, @descuento, @baseGravable, @iva, @tasaIva, @total, @metodo, @pagoCon, @cambio, 0); " &
-                    "SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                    "SELECT last_insert_rowid();",
                     cn,
                     trans)
                     cmdPedido.Parameters.AddWithValue("@idCliente", idCliente)
@@ -1770,7 +1770,7 @@ Public Class Form2
                     Dim qty As Integer = CInt(row("Cantidad"))
                     Dim precio As Decimal = CDec(row("Precio"))
 
-                    Using cmdDet As New SqlCommand(
+                    Using cmdDet As New SQLiteCommand(
                         "INSERT INTO DET_PEDIDOS (Id_Pedido, Id_Producto, Cantidad, PrecioVentaMomento) " &
                         "VALUES (@idPedido, @idProducto, @cantidad, @precio)",
                         cn,
@@ -1782,7 +1782,7 @@ Public Class Form2
                         cmdDet.ExecuteNonQuery()
                     End Using
 
-                    Using cmdStock As New SqlCommand(
+                    Using cmdStock As New SQLiteCommand(
                         "UPDATE INVENTARIO SET cant_disp = cant_disp - @qty " &
                         "WHERE Id_Producto = @idProducto AND cant_disp >= @qty",
                         cn,

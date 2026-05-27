@@ -1,6 +1,6 @@
 ' Genera, muestra e imprime tickets de venta.
 
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 Imports System.Drawing.Printing
 
 Public Class Form6
@@ -169,19 +169,19 @@ Public Class Form6
 
         Dim venta = ObtenerTabla(
             "SELECT Fecha, " &
-            "ISNULL(Subtotal, Total) AS Subtotal, " &
-            "ISNULL(Descuento, 0) AS Descuento, " &
-            "ISNULL(BaseGravable, ISNULL(Subtotal, Total) - ISNULL(Descuento, 0)) AS BaseGravable, " &
-            "ISNULL(IVA, 0) AS IVA, " &
-            "ISNULL(TasaIVA, 0) AS TasaIVA, " &
+            "IFNULL(Subtotal, Total) AS Subtotal, " &
+            "IFNULL(Descuento, 0) AS Descuento, " &
+            "IFNULL(BaseGravable, IFNULL(Subtotal, Total) - IFNULL(Descuento, 0)) AS BaseGravable, " &
+            "IFNULL(IVA, 0) AS IVA, " &
+            "IFNULL(TasaIVA, 0) AS TasaIVA, " &
             "Total, " &
-            "ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, " &
-            "ISNULL(PagoCon, Total) AS PagoCon, " &
-            "ISNULL(Cambio, 0) AS Cambio, " &
-            "ISNULL(Cancelada, 0) AS Cancelada, " &
+            "IFNULL(MetodoPago, 'Efectivo') AS MetodoPago, " &
+            "IFNULL(PagoCon, Total) AS PagoCon, " &
+            "IFNULL(Cambio, 0) AS Cambio, " &
+            "IFNULL(Cancelada, 0) AS Cancelada, " &
             "FechaCancelacion " &
             "FROM PEDIDOS WHERE Id_Pedido = @id",
-            New SqlParameter("@id", idVenta))
+            New SQLiteParameter("@id", idVenta))
 
         If venta.Rows.Count = 0 Then
             Return New TicketData With {
@@ -230,7 +230,7 @@ Public Class Form6
             "FROM DET_PEDIDOS d " &
             "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
             "WHERE d.Id_Pedido = @id",
-            New SqlParameter("@id", idVenta))
+            New SQLiteParameter("@id", idVenta))
 
         Dim sumaDetalles As Decimal = 0D
         For Each row As DataRow In dt.Rows

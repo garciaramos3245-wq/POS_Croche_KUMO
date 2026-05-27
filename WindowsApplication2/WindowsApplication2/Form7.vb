@@ -1,6 +1,6 @@
 ' Genera reportes diarios y exporta la informacion a un archivo Excel.
 
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 Imports System.Globalization
 Imports System.IO
 Imports System.IO.Compression
@@ -313,42 +313,42 @@ Public Class Form7
 
             Dim ventas = Await Task.Run(Function()
                                             Return ObtenerTabla(
-                                                "SELECT p.Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(p.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-                                                "ISNULL(p.MetodoPago, 'Efectivo') AS [Metodo], ISNULL(p.Subtotal, p.Total) AS [Subtotal], " &
-                                                "ISNULL(p.Descuento, 0) AS [Descuento], ISNULL(p.IVA, 0) AS [IVA], p.Total, " &
-                                                "ISNULL(p.PagoCon, p.Total) AS [Pago], ISNULL(p.Cambio, 0) AS [Cambio], " &
-                                                "CASE WHEN ISNULL(p.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado] " &
-                                                "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha " &
+                                                "SELECT p.Id_Pedido AS [N Venta], strftime('%H:%M', p.Fecha) AS [Hora], " &
+                                                "IFNULL(p.MetodoPago, 'Efectivo') AS [Metodo], IFNULL(p.Subtotal, p.Total) AS [Subtotal], " &
+                                                "IFNULL(p.Descuento, 0) AS [Descuento], IFNULL(p.IVA, 0) AS [IVA], p.Total, " &
+                                                "IFNULL(p.PagoCon, p.Total) AS [Pago], IFNULL(p.Cambio, 0) AS [Cambio], " &
+                                                "CASE WHEN IFNULL(p.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado] " &
+                                                "FROM PEDIDOS p WHERE date(p.Fecha)=date(@fecha) " &
                                                 "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
                                                 "ORDER BY p.Fecha DESC",
-                                                New SqlParameter("@fecha", fecha))
+                                                New SQLiteParameter("@fecha", fecha))
                                         End Function)
 
             Dim resumen = Await Task.Run(Function()
                                                  Return ObtenerTabla(
-                                                     "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
-                                                 "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha AND ISNULL(p.Cancelada, 0) = 0 " &
+                                                     "SELECT COUNT(*) AS VentasDia, IFNULL(SUM(Total),0) AS Ingresos, IFNULL(AVG(Total),0) AS Promedio " &
+                                                 "FROM PEDIDOS p WHERE date(p.Fecha)=date(@fecha) AND IFNULL(p.Cancelada, 0) = 0 " &
                                                  "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
-                                                 New SqlParameter("@fecha", fecha))
+                                                 New SQLiteParameter("@fecha", fecha))
                                          End Function)
 
             Dim articulos = Await Task.Run(Function()
                                                Return ObtenerEscalar(
-                                                   "SELECT ISNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
+                                                   "SELECT IFNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
                                                    "INNER JOIN PEDIDOS p ON p.Id_Pedido = d.Id_Pedido " &
-                                                   "WHERE CAST(p.Fecha AS DATE)=@fecha AND ISNULL(p.Cancelada, 0) = 0",
-                                                   New SqlParameter("@fecha", fecha))
+                                                   "WHERE date(p.Fecha)=date(@fecha) AND IFNULL(p.Cancelada, 0) = 0",
+                                                   New SQLiteParameter("@fecha", fecha))
                                            End Function)
 
             Dim topProductos = Await Task.Run(Function()
                                                   Return ObtenerTabla(
-                                                      "SELECT TOP 5 p.NombrePr AS [Producto], SUM(d.Cantidad) AS [Unidades] " &
+                                                      "SELECT p.NombrePr AS [Producto], SUM(d.Cantidad) AS [Unidades] " &
                                                       "FROM DET_PEDIDOS d " &
                                                       "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
                                                       "INNER JOIN PEDIDOS pd ON pd.Id_Pedido = d.Id_Pedido " &
-                                                      "WHERE CAST(pd.Fecha AS DATE)=@fecha AND ISNULL(pd.Cancelada, 0) = 0 " &
-                                                      "GROUP BY p.NombrePr ORDER BY Unidades DESC",
-                                                      New SqlParameter("@fecha", fecha))
+                                                      "WHERE date(pd.Fecha)=date(@fecha) AND IFNULL(pd.Cancelada, 0) = 0 " &
+                                                      "GROUP BY p.NombrePr ORDER BY Unidades DESC LIMIT 5",
+                                                      New SQLiteParameter("@fecha", fecha))
                                               End Function)
 
             dgvVentas.DataSource = ventas
@@ -409,11 +409,11 @@ Public Class Form7
     Private Sub CargarDetalleVenta(id As Integer)
         Try
             Dim venta = ObtenerTabla(
-                "SELECT ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, ISNULL(PagoCon, Total) AS PagoCon, " &
-                "ISNULL(Cambio, 0) AS Cambio, Total, ISNULL(Cancelada, 0) AS Cancelada " &
+                "SELECT IFNULL(MetodoPago, 'Efectivo') AS MetodoPago, IFNULL(PagoCon, Total) AS PagoCon, " &
+                "IFNULL(Cambio, 0) AS Cambio, Total, IFNULL(Cancelada, 0) AS Cancelada " &
                 "FROM PEDIDOS p WHERE p.Id_Pedido = @id " &
                 "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
-                New SqlParameter("@id", id))
+                New SQLiteParameter("@id", id))
 
             Dim detalle = ObtenerTabla(
                 "SELECT p.NombrePr AS [Producto], d.Cantidad, d.PrecioVentaMomento AS [Precio unitario], " &
@@ -421,7 +421,7 @@ Public Class Form7
                 "FROM DET_PEDIDOS d " &
                 "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
                 "WHERE d.Id_Pedido = @id ORDER BY p.NombrePr",
-                New SqlParameter("@id", id))
+                New SQLiteParameter("@id", id))
 
             dgvDetalleVenta.DataSource = detalle
             If dgvDetalleVenta.Columns.Contains("Precio unitario") Then dgvDetalleVenta.Columns("Precio unitario").DefaultCellStyle.Format = "C2"
@@ -510,29 +510,29 @@ Public Class Form7
     ' Consulta el detalle de productos vendidos por ticket para el reporte.
     Private Function ObtenerDetalleVentasReporte() As DataTable
         Return ObtenerTabla(
-            "SELECT pd.Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(pd.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-            "CASE WHEN ISNULL(pd.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado], " &
-            "ISNULL(pd.MetodoPago, 'Efectivo') AS [Metodo], p.NombrePr AS [Producto], d.Cantidad, " &
+            "SELECT pd.Id_Pedido AS [N Venta], strftime('%H:%M', pd.Fecha) AS [Hora], " &
+            "CASE WHEN IFNULL(pd.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado], " &
+            "IFNULL(pd.MetodoPago, 'Efectivo') AS [Metodo], p.NombrePr AS [Producto], d.Cantidad, " &
             "d.PrecioVentaMomento AS [Precio unitario], (d.Cantidad * d.PrecioVentaMomento) AS [Importe] " &
             "FROM DET_PEDIDOS d " &
             "INNER JOIN PEDIDOS pd ON pd.Id_Pedido = d.Id_Pedido " &
             "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
-            "WHERE CAST(pd.Fecha AS DATE)=@fecha " &
+            "WHERE date(pd.Fecha)=date(@fecha) " &
             "AND EXISTS (SELECT 1 FROM DET_PEDIDOS dv WHERE dv.Id_Pedido = pd.Id_Pedido) " &
             "ORDER BY pd.Fecha DESC, pd.Id_Pedido DESC, p.NombrePr",
-            New SqlParameter("@fecha", dtpFecha.Value.Date))
+            New SQLiteParameter("@fecha", dtpFecha.Value.Date))
     End Function
 
     ' Resume ventas, total, pago y cambio por metodo de pago.
     Private Function ObtenerMetodosPagoReporte() As DataTable
         Return ObtenerTabla(
-            "SELECT ISNULL(MetodoPago, 'Efectivo') AS [Metodo de pago], COUNT(*) AS [Ventas], " &
-            "ISNULL(SUM(ISNULL(Subtotal, Total)), 0) AS [Subtotal], ISNULL(SUM(ISNULL(Descuento, 0)), 0) AS [Descuentos], " &
-            "ISNULL(SUM(ISNULL(IVA, 0)), 0) AS [IVA], ISNULL(SUM(Total), 0) AS [Total] " &
-            "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha AND ISNULL(p.Cancelada, 0) = 0 " &
+            "SELECT IFNULL(MetodoPago, 'Efectivo') AS [Metodo de pago], COUNT(*) AS [Ventas], " &
+            "IFNULL(SUM(IFNULL(Subtotal, Total)), 0) AS [Subtotal], IFNULL(SUM(IFNULL(Descuento, 0)), 0) AS [Descuentos], " &
+            "IFNULL(SUM(IFNULL(IVA, 0)), 0) AS [IVA], IFNULL(SUM(Total), 0) AS [Total] " &
+            "FROM PEDIDOS p WHERE date(p.Fecha)=date(@fecha) AND IFNULL(p.Cancelada, 0) = 0 " &
             "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
-            "GROUP BY ISNULL(MetodoPago, 'Efectivo') ORDER BY [Total] DESC",
-            New SqlParameter("@fecha", dtpFecha.Value.Date))
+            "GROUP BY IFNULL(MetodoPago, 'Efectivo') ORDER BY [Total] DESC",
+            New SQLiteParameter("@fecha", dtpFecha.Value.Date))
     End Function
 
     ' Agrega una entrada de texto UTF-8 dentro del archivo XLSX.

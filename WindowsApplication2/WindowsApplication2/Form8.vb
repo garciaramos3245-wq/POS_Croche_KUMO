@@ -1,6 +1,6 @@
 ' Cancela ventas existentes y restaura el stock de los productos vendidos.
 
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 
 Public Class Form8
 
@@ -180,13 +180,13 @@ Public Class Form8
             Try
                 AsegurarColumnasPagoPedido()
                 cn.Open()
-                Dim da As New SqlDataAdapter(
+                Dim da As New SQLiteDataAdapter(
                     "SELECT p.Id_Pedido AS [N Venta], " &
-                    "LOWER(REPLACE(REPLACE(FORMAT(p.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-                    "CONVERT(varchar,p.Fecha,103) AS [Fecha], " &
+                    "strftime('%H:%M', p.Fecha) AS [Hora], " &
+                    "strftime('%d/%m/%Y', p.Fecha) AS [Fecha], " &
                     "p.Total, " &
-                    "CASE WHEN ISNULL(p.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS Estado " &
-                    "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE)=@fecha " &
+                    "CASE WHEN IFNULL(p.Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS Estado " &
+                    "FROM PEDIDOS p WHERE date(p.Fecha)=date(@fecha) " &
                     "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
                     "ORDER BY p.Fecha DESC", cn)
                 da.SelectCommand.Parameters.AddWithValue("@fecha", fecha)
@@ -215,7 +215,7 @@ Public Class Form8
         Using cn = ObtenerConexion()
             Try
                 cn.Open()
-                Dim da As New SqlDataAdapter(
+                Dim da As New SQLiteDataAdapter(
                     "SELECT p.NombrePr AS [Producto], d.Cantidad, " &
                     "(d.Cantidad * d.PrecioVentaMomento) AS Subtotal " &
                     "FROM DET_PEDIDOS d " &
@@ -252,13 +252,13 @@ Public Class Form8
                                      "Cancelar venta", "Regresar", ModMensajes.TipoAviso.Advertencia) Then Return
 
         Using cn = ObtenerConexion()
-            Dim trans As SqlTransaction = Nothing
+            Dim trans As SQLiteTransaction = Nothing
             Try
                 AsegurarColumnasPagoPedido()
                 cn.Open()
                 trans = cn.BeginTransaction()
-                Using cmdEstado As New SqlCommand(
-                    "SELECT ISNULL(Cancelada, 0) FROM PEDIDOS WITH (UPDLOCK, HOLDLOCK) WHERE Id_Pedido = @id",
+                Using cmdEstado As New SQLiteCommand(
+                    "SELECT IFNULL(Cancelada, 0) FROM PEDIDOS WHERE Id_Pedido = @id",
                     cn,
                     trans)
                     cmdEstado.Parameters.AddWithValue("@id", idSeleccionado)
@@ -276,7 +276,7 @@ Public Class Form8
                 End Using
 
                 Dim dtDetalle As New DataTable
-                Using daDetalle As New SqlDataAdapter(
+                Using daDetalle As New SQLiteDataAdapter(
                     "SELECT Id_Producto, Cantidad FROM DET_PEDIDOS WHERE Id_Pedido=@idVenta",
                     cn)
                     daDetalle.SelectCommand.Transaction = trans
@@ -285,7 +285,7 @@ Public Class Form8
                 End Using
 
                 For Each row As DataRow In dtDetalle.Rows
-                    Using ejStock As New SqlCommand(
+                    Using ejStock As New SQLiteCommand(
                         "UPDATE INVENTARIO SET cant_disp = cant_disp + @qty WHERE Id_Producto=@idp",
                         cn,
                         trans)
@@ -295,7 +295,7 @@ Public Class Form8
                     End Using
                 Next
 
-                Using ejPedido As New SqlCommand(
+                Using ejPedido As New SQLiteCommand(
                     "UPDATE PEDIDOS SET Cancelada = 1, FechaCancelacion = @fechaCancelacion, MotivoCancelacion = @motivo WHERE Id_Pedido=@id",
                     cn,
                     trans)

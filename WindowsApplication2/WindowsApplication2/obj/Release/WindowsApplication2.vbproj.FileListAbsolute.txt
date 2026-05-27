@@ -1,13 +1,15 @@
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\Assets\Logo.ico
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\Assets\ExeIcon.ico
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\Assets\Logo.jpeg
-C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\InstalacionDemo\ConfigurarBaseDatosDemo.ps1
-C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\InstalacionDemo\KUMOBD.sql
-C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\InstalacionDemo\GUIA_INSTALACION_SQL_EXPRESS_Y_PUBLICACION.md
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\Datos\KUMOBD.sql
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\GUIA_SQLITE_Y_PUBLICACION.md
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\x86\SQLite.Interop.dll
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\x64\SQLite.Interop.dll
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\WindowsApplication2.exe.config
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\WindowsApplication2.exe
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\WindowsApplication2.pdb
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\WindowsApplication2.xml
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\bin\Release\System.Data.SQLite.dll
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.vbproj.AssemblyReference.cache
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.Form1.resources
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.Form2.resources
@@ -20,6 +22,7 @@ C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\Win
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.Resources.resources
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.vbproj.GenerateResource.cache
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.vbproj.CoreCompileInputs.cache
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsA.5AB8AD04.Up2Date
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.exe
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.xml
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Release\WindowsApplication2.pdb

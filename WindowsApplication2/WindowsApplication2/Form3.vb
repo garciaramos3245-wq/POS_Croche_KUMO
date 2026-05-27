@@ -1,6 +1,6 @@
 ' Administra el inventario: busqueda, alta, edicion, eliminacion y recarga de productos.
 
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 
 Public Class Form3
 
@@ -268,7 +268,7 @@ Public Class Form3
         Try
             dtProductos = ObtenerTabla(
                 "SELECT p.Id_Producto AS ID_Producto, p.NombrePr AS Nombre, p.Precio, " &
-                "ISNULL(i.cant_disp,0) AS Stock, c.NombreCat AS Categoria " &
+                "IFNULL(i.cant_disp,0) AS Stock, c.NombreCat AS Categoria " &
                 "FROM PRODUCTO p " &
                 "LEFT JOIN INVENTARIO i ON i.Id_Producto = p.Id_Producto " &
                 "LEFT JOIN " & TablaCategorias() & " c ON c.Id_Categoria = p.Id_Categoria " &
@@ -351,12 +351,12 @@ Public Class Form3
         End If
 
         Using cn = ObtenerConexion()
-            Dim trans As SqlTransaction = Nothing
+            Dim trans As SQLiteTransaction = Nothing
             Try
                 cn.Open()
                 trans = cn.BeginTransaction()
                 Dim idCategoria As Integer
-                Using cmdCat As New SqlCommand(
+                Using cmdCat As New SQLiteCommand(
                     "SELECT Id_Categoria FROM " & TablaCategorias() & " WHERE NombreCat = @nombre",
                     cn,
                     trans)
@@ -370,9 +370,9 @@ Public Class Form3
 
                 If idSeleccionado = 0 Then
                     Dim nuevoId As Integer
-                    Using cmd As New SqlCommand(
+                    Using cmd As New SQLiteCommand(
                         "INSERT INTO PRODUCTO (NombrePr, Precio, Id_Categoria) VALUES (@nombre, @precio, @idCategoria); " &
-                        "SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                        "SELECT last_insert_rowid();",
                         cn,
                         trans)
                         cmd.Parameters.AddWithValue("@nombre", nombre)
@@ -381,7 +381,7 @@ Public Class Form3
                         nuevoId = CInt(cmd.ExecuteScalar())
                     End Using
 
-                    Using cmdInv As New SqlCommand(
+                    Using cmdInv As New SQLiteCommand(
                         "INSERT INTO INVENTARIO (cant_disp, Id_Producto) VALUES (@stock, @idProducto)",
                         cn,
                         trans)
@@ -390,7 +390,7 @@ Public Class Form3
                         cmdInv.ExecuteNonQuery()
                     End Using
                 Else
-                    Using cmd As New SqlCommand(
+                    Using cmd As New SQLiteCommand(
                         "UPDATE PRODUCTO SET NombrePr = @nombre, Precio = @precio, Id_Categoria = @idCategoria " &
                         "WHERE Id_Producto = @idProducto",
                         cn,
@@ -402,7 +402,7 @@ Public Class Form3
                         cmd.ExecuteNonQuery()
                     End Using
 
-                    Using cmdInv As New SqlCommand(
+                    Using cmdInv As New SQLiteCommand(
                         "UPDATE INVENTARIO SET cant_disp = @stock WHERE Id_Producto = @idProducto",
                         cn,
                         trans)
@@ -430,16 +430,16 @@ Public Class Form3
         If idSeleccionado = 0 Then ModMensajes.Mostrar(Me, "Selecciona un producto", "Elige un producto de la lista antes de eliminarlo.", ModMensajes.TipoAviso.Advertencia) : Return
         If ModMensajes.Confirmar(Me, "Eliminar producto", "Deseas eliminar " & txtNombre.Text & " del inventario?", "Eliminar", "Cancelar", ModMensajes.TipoAviso.Advertencia) Then
             Using cn = ObtenerConexion()
-                Dim trans As SqlTransaction = Nothing
+                Dim trans As SQLiteTransaction = Nothing
                 Try
                     cn.Open()
                     trans = cn.BeginTransaction()
-                    Using cmdInv As New SqlCommand("DELETE FROM INVENTARIO WHERE Id_Producto = @idProducto", cn, trans)
+                    Using cmdInv As New SQLiteCommand("DELETE FROM INVENTARIO WHERE Id_Producto = @idProducto", cn, trans)
                         cmdInv.Parameters.AddWithValue("@idProducto", idSeleccionado)
                         cmdInv.ExecuteNonQuery()
                     End Using
 
-                    Using cmd As New SqlCommand("DELETE FROM PRODUCTO WHERE Id_Producto = @idProducto", cn, trans)
+                    Using cmd As New SQLiteCommand("DELETE FROM PRODUCTO WHERE Id_Producto = @idProducto", cn, trans)
                         cmd.Parameters.AddWithValue("@idProducto", idSeleccionado)
                         cmd.ExecuteNonQuery()
                     End Using

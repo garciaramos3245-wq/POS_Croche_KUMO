@@ -1,7 +1,7 @@
 ' Administra pedidos especiales y su informacion de cliente, entrega, saldo y estado.
 
 Imports System.Data
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 Imports System.Globalization
 
 Public Class Form5
@@ -273,10 +273,12 @@ Public Class Form5
 
             Dim dt = ObtenerTabla(
                 "SELECT p.Id_Pedido AS ID_Pedido, " &
-                "RTRIM(c.Nombres_cl + ' ' + ISNULL(c.Apellidos,'')) AS Cliente, " &
-                "LOWER(FORMAT(p.Fecha, 'dddd', 'es-MX')) AS Dia, " &
-                "CONVERT(varchar, p.Fecha, 103) AS Entrega, " &
-                "LOWER(REPLACE(REPLACE(FORMAT(p.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS Hora " &
+                "TRIM(c.Nombres_cl || ' ' || IFNULL(c.Apellidos,'')) AS Cliente, " &
+                "CASE strftime('%w', p.Fecha) WHEN '0' THEN 'domingo' WHEN '1' THEN 'lunes' " &
+                "WHEN '2' THEN 'martes' WHEN '3' THEN 'miercoles' WHEN '4' THEN 'jueves' " &
+                "WHEN '5' THEN 'viernes' ELSE 'sabado' END AS Dia, " &
+                "strftime('%d/%m/%Y', p.Fecha) AS Entrega, " &
+                "strftime('%H:%M', p.Fecha) AS Hora " &
                 "FROM PEDIDOS p " &
                 "INNER JOIN CLIENTES c ON c.ID_CLIENTE = p.ID_CLIENTE " &
                 "WHERE NOT EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
@@ -323,7 +325,7 @@ Public Class Form5
                 "INNER JOIN CLIENTES c ON c.ID_CLIENTE = p.ID_CLIENTE " &
                 "WHERE p.Id_Pedido = @id " &
                 "AND NOT EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
-                New SqlParameter("@id", idSeleccionado))
+                New SQLiteParameter("@id", idSeleccionado))
 
             If dt.Rows.Count = 0 Then Return
 
@@ -423,15 +425,15 @@ Public Class Form5
     End Function
 
     ' Agrega texto largo de pedido y permite limpiar el dato guardando nulo.
-    Private Sub AgregarParametroTexto(cmd As SqlCommand, nombre As String, valor As String)
+    Private Sub AgregarParametroTexto(cmd As SQLiteCommand, nombre As String, valor As String)
         Dim limpio As String = If(valor, "").Trim()
-        Dim parametro = cmd.Parameters.Add(nombre, SqlDbType.NVarChar, -1)
+        Dim parametro = cmd.Parameters.Add(nombre, DbType.String)
         parametro.Value = If(limpio = "", CType(DBNull.Value, Object), limpio)
     End Sub
 
-    ' Agrega importes con precision consistente para SQL Server.
-    Private Sub AgregarParametroDecimal(cmd As SqlCommand, nombre As String, valor As Decimal)
-        Dim parametro = cmd.Parameters.Add(nombre, SqlDbType.Decimal)
+    ' Agrega importes con precision consistente para SQLite.
+    Private Sub AgregarParametroDecimal(cmd As SQLiteCommand, nombre As String, valor As Decimal)
+        Dim parametro = cmd.Parameters.Add(nombre, DbType.Decimal)
         parametro.Precision = 10
         parametro.Scale = 2
         parametro.Value = valor
@@ -457,7 +459,7 @@ Public Class Form5
         End Try
 
         Using cn = ObtenerConexion()
-            Dim trans As SqlTransaction = Nothing
+            Dim trans As SQLiteTransaction = Nothing
             Try
                 cn.Open()
                 trans = cn.BeginTransaction()
@@ -465,7 +467,7 @@ Public Class Form5
                 Dim metodo = ObtenerMetodoPedido()
 
                 If idSeleccionado = 0 Then
-                    Using cmd As New SqlCommand(
+                    Using cmd As New SQLiteCommand(
                         "INSERT INTO PEDIDOS (ID_CLIENTE, Fecha, Total, MetodoPago, DescripcionPedido, Colores, Medidas, Notas, Anticipo, Saldo) " &
                         "VALUES (@idCliente, @fecha, @total, @metodo, @descripcion, @colores, @medidas, @notas, @anticipo, @saldo)",
                         cn,
@@ -483,7 +485,7 @@ Public Class Form5
                         cmd.ExecuteNonQuery()
                     End Using
                 Else
-                    Using cmd As New SqlCommand(
+                    Using cmd As New SQLiteCommand(
                         "UPDATE PEDIDOS SET ID_CLIENTE = @idCliente, Fecha = @fecha, " &
                         "Total = @total, MetodoPago = @metodo, DescripcionPedido = @descripcion, " &
                         "Colores = @colores, Medidas = @medidas, Notas = @notas, Anticipo = @anticipo, Saldo = @saldo " &
@@ -531,11 +533,11 @@ Public Class Form5
         Try
             Using cn = ObtenerConexion()
                 cn.Open()
-                Using cmdDet As New SqlCommand("DELETE FROM DET_PEDIDOS WHERE Id_Pedido = @id", cn)
+                Using cmdDet As New SQLiteCommand("DELETE FROM DET_PEDIDOS WHERE Id_Pedido = @id", cn)
                     cmdDet.Parameters.AddWithValue("@id", idSeleccionado)
                     cmdDet.ExecuteNonQuery()
                 End Using
-                Using cmd As New SqlCommand("DELETE FROM PEDIDOS WHERE Id_Pedido = @id", cn)
+                Using cmd As New SQLiteCommand("DELETE FROM PEDIDOS WHERE Id_Pedido = @id", cn)
                     cmd.Parameters.AddWithValue("@id", idSeleccionado)
                     cmd.ExecuteNonQuery()
                 End Using

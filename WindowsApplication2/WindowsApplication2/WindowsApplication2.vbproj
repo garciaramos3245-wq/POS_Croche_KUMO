@@ -70,6 +70,10 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite">
+      <HintPath>Lib\SQLite\System.Data.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -206,15 +210,20 @@
     <Content Include="Assets\Logo.jpeg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="InstalacionDemo\ConfigurarBaseDatosDemo.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\..\KUMOBD.sql">
-      <Link>InstalacionDemo\KUMOBD.sql</Link>
+      <Link>Datos\KUMOBD.sql</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\GUIA_INSTALACION_SQL_EXPRESS_Y_PUBLICACION.md">
-      <Link>InstalacionDemo\GUIA_INSTALACION_SQL_EXPRESS_Y_PUBLICACION.md</Link>
+    <Content Include="..\..\GUIA_SQLITE_Y_PUBLICACION.md">
+      <Link>GUIA_SQLITE_Y_PUBLICACION.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Lib\SQLite\x86\SQLite.Interop.dll">
+      <Link>x86\SQLite.Interop.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Lib\SQLite\x64\SQLite.Interop.dll">
+      <Link>x64\SQLite.Interop.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="My Project\app.manifest" />

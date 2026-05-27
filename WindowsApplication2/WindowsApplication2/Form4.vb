@@ -1,6 +1,6 @@
 ' Muestra el historial diario de ventas, resumenes y detalle de tickets.
 
-Imports System.Data.SqlClient
+Imports System.Data.SQLite
 
 Public Class Form4
 
@@ -320,31 +320,31 @@ Public Class Form4
 
             Dim ventas = Await Task.Run(Function()
                                             Return ObtenerTabla(
-                                                "SELECT p.Id_Pedido AS [N Venta], LOWER(REPLACE(REPLACE(FORMAT(p.Fecha, 'h:mm tt', 'en-US'), 'AM', 'a.m.'), 'PM', 'p.m.')) AS [Hora], " &
-                                                "CONVERT(varchar, p.Fecha, 103) AS [Fecha], ISNULL(p.MetodoPago, 'Efectivo') AS [Metodo], " &
-                                                "ISNULL(p.Subtotal, p.Total) AS [Subtotal], ISNULL(p.Descuento, 0) AS [Descuento], ISNULL(p.IVA, 0) AS [IVA], p.Total, " &
-                                                "CASE WHEN ISNULL(Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado] " &
+                                                "SELECT p.Id_Pedido AS [N Venta], strftime('%H:%M', p.Fecha) AS [Hora], " &
+                                                "strftime('%d/%m/%Y', p.Fecha) AS [Fecha], IFNULL(p.MetodoPago, 'Efectivo') AS [Metodo], " &
+                                                "IFNULL(p.Subtotal, p.Total) AS [Subtotal], IFNULL(p.Descuento, 0) AS [Descuento], IFNULL(p.IVA, 0) AS [IVA], p.Total, " &
+                                                "CASE WHEN IFNULL(Cancelada, 0) = 1 THEN 'Cancelada' ELSE 'Activa' END AS [Estado] " &
                                                 "FROM PEDIDOS p " &
-                                                "WHERE CAST(p.Fecha AS DATE) = @fecha " &
+                                                "WHERE date(p.Fecha) = date(@fecha) " &
                                                 "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido) " &
                                                 "ORDER BY p.Fecha DESC",
-                                                New SqlParameter("@fecha", fecha))
+                                                New SQLiteParameter("@fecha", fecha))
                                         End Function)
 
             Dim resumen = Await Task.Run(Function()
                                                  Return ObtenerTabla(
-                                                     "SELECT COUNT(*) AS VentasDia, ISNULL(SUM(Total),0) AS Ingresos, ISNULL(AVG(Total),0) AS Promedio " &
-                                                 "FROM PEDIDOS p WHERE CAST(p.Fecha AS DATE) = @fecha AND ISNULL(p.Cancelada, 0) = 0 " &
+                                                     "SELECT COUNT(*) AS VentasDia, IFNULL(SUM(Total),0) AS Ingresos, IFNULL(AVG(Total),0) AS Promedio " &
+                                                 "FROM PEDIDOS p WHERE date(p.Fecha) = date(@fecha) AND IFNULL(p.Cancelada, 0) = 0 " &
                                                  "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
-                                                 New SqlParameter("@fecha", fecha))
+                                                 New SQLiteParameter("@fecha", fecha))
                                          End Function)
 
             Dim articulos = Await Task.Run(Function()
                                                Return ObtenerEscalar(
-                                                   "SELECT ISNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
+                                                   "SELECT IFNULL(SUM(d.Cantidad),0) FROM DET_PEDIDOS d " &
                                                    "INNER JOIN PEDIDOS p ON p.Id_Pedido = d.Id_Pedido " &
-                                                   "WHERE CAST(p.Fecha AS DATE) = @fecha AND ISNULL(p.Cancelada, 0) = 0",
-                                                   New SqlParameter("@fecha", fecha))
+                                                   "WHERE date(p.Fecha) = date(@fecha) AND IFNULL(p.Cancelada, 0) = 0",
+                                                   New SQLiteParameter("@fecha", fecha))
                                            End Function)
 
             dgvVentas.DataSource = ventas
@@ -402,11 +402,11 @@ Public Class Form4
     Private Sub CargarDetalleVenta(id As Integer)
         Try
             Dim venta = ObtenerTabla(
-                "SELECT ISNULL(MetodoPago, 'Efectivo') AS MetodoPago, ISNULL(PagoCon, Total) AS PagoCon, " &
-                "ISNULL(Cambio, 0) AS Cambio, Total, ISNULL(Cancelada, 0) AS Cancelada, FechaCancelacion " &
+                "SELECT IFNULL(MetodoPago, 'Efectivo') AS MetodoPago, IFNULL(PagoCon, Total) AS PagoCon, " &
+                "IFNULL(Cambio, 0) AS Cambio, Total, IFNULL(Cancelada, 0) AS Cancelada, FechaCancelacion " &
                 "FROM PEDIDOS p WHERE p.Id_Pedido = @id " &
                 "AND EXISTS (SELECT 1 FROM DET_PEDIDOS d WHERE d.Id_Pedido = p.Id_Pedido)",
-                New SqlParameter("@id", id))
+                New SQLiteParameter("@id", id))
 
             Dim detalle = ObtenerTabla(
                 "SELECT p.NombrePr AS [Producto], d.Cantidad, d.PrecioVentaMomento AS [Precio unitario], " &
@@ -414,7 +414,7 @@ Public Class Form4
                 "FROM DET_PEDIDOS d " &
                 "INNER JOIN PRODUCTO p ON p.Id_Producto = d.Id_Producto " &
                 "WHERE d.Id_Pedido = @id ORDER BY p.NombrePr",
-                New SqlParameter("@id", id))
+                New SQLiteParameter("@id", id))
 
             dgvDetalleVenta.DataSource = detalle
             If dgvDetalleVenta.Columns.Contains("Precio unitario") Then dgvDetalleVenta.Columns("Precio unitario").DefaultCellStyle.Format = "C2"
