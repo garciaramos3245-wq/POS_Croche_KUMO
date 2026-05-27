@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="Con_Croche" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Server=UZZIEL\SQLEXPRESS;Database=KUMOBD;Integrated security=true</Value>
+      <Value Profile="(Default)">Server=.\SQLEXPRESS;Database=KUMOBD;Integrated Security=True;Connect Timeout=5;Application Name=KUMO POS</Value>
     </Setting>
   </Settings>
 </SettingsFile>

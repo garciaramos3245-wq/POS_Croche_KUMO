@@ -50,5 +50,4 @@ C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\Win
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.exe
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.xml
 C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.pdb
-C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.vbproj.AssemblyReference.cache
-C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.vbproj.CoreCompileInputs.cache
+C:\Users\garci\OneDrive\Imágenes\Escritorio\New_Project\WindowsApplication2\WindowsApplication2\obj\Debug\WindowsApplication2.vbprojResolveAssemblyReference.cache

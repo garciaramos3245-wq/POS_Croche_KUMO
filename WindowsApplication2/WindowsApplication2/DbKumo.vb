@@ -7,9 +7,95 @@ Module DbKumo
 
     ' Funciones compartidas para abrir conexiones y ejecutar consultas contra SQL Server.
 
+    Public Const ServidorEsperado As String = ".\SQLEXPRESS"
+    Public Const BaseDatosEsperada As String = "KUMOBD"
+
     ' Crea una conexion nueva usando la cadena configurada en My.Settings.
     Public Function ObtenerConexion() As SqlConnection
         Return New SqlConnection(My.Settings.Con_Croche)
+    End Function
+
+    ' Confirma que la instancia, la base y las tablas minimas requeridas esten disponibles.
+    Public Function ProbarConexionAplicacion(ByRef mensaje As String) As Boolean
+        Try
+            Using cn = ObtenerConexion()
+                cn.Open()
+                Using cmd As New SqlCommand(
+                    "SELECT CASE WHEN OBJECT_ID(N'PRODUCTO', N'U') IS NOT NULL " &
+                    "AND OBJECT_ID(N'INVENTARIO', N'U') IS NOT NULL " &
+                    "AND OBJECT_ID(N'CATEGORÍA', N'U') IS NOT NULL " &
+                    "AND OBJECT_ID(N'PEDIDOS', N'U') IS NOT NULL " &
+                    "AND OBJECT_ID(N'DET_PEDIDOS', N'U') IS NOT NULL THEN 1 ELSE 0 END",
+                    cn)
+                    If CInt(cmd.ExecuteScalar()) <> 1 Then
+                        mensaje = "La base KUMOBD existe, pero no tiene las tablas requeridas." & vbCrLf &
+                                  "Ejecuta InstalacionDemo\ConfigurarBaseDatosDemo.ps1."
+                        Return False
+                    End If
+                End Using
+            End Using
+
+            mensaje = ""
+            Return True
+        Catch ex As Exception
+            mensaje = CrearMensajeErrorDatos("abrir la base de datos", ex)
+            Return False
+        End Try
+    End Function
+
+    ' Construye un mensaje corto y util para resolver fallas comunes de SQL Server Express.
+    Public Function CrearMensajeErrorDatos(accion As String, ex As Exception) As String
+        Dim real As Exception = ObtenerErrorReal(ex)
+        Dim sqlError = TryCast(real, SqlException)
+        Dim solucion As String
+
+        If sqlError Is Nothing Then
+            solucion = "Revisa la configuracion de la base de datos y vuelve a intentar."
+        Else
+            Select Case sqlError.Number
+                Case -1, 2, 26, 53
+                    solucion = "Instala o inicia SQL Server Express con la instancia SQLEXPRESS."
+                Case 4060
+                    solucion = "La instancia existe, pero falta KUMOBD. Ejecuta el script de instalacion."
+                Case 18456
+                    solucion = "El usuario de Windows no tiene permiso para ingresar a SQL Server."
+                Case 208
+                    solucion = "Faltan tablas de KUMOBD. Ejecuta el script de instalacion."
+                Case Else
+                    solucion = "Revisa SQL Server Express y la base KUMOBD."
+            End Select
+        End If
+
+        Return "No se pudo " & accion & "." & vbCrLf &
+               "Servidor: " & ServidorEsperado & "  |  Base: " & BaseDatosEsperada & vbCrLf &
+               solucion & vbCrLf &
+               "Detalle: " & ResumirDetalle(real.Message)
+    End Function
+
+    ' Desenvuelve excepciones de tareas asincronas para diagnosticar la causa de SQL Server.
+    Private Function ObtenerErrorReal(ex As Exception) As Exception
+        Dim agregado = TryCast(ex, AggregateException)
+        If agregado IsNot Nothing AndAlso agregado.InnerExceptions.Count > 0 Then
+            Return ObtenerErrorReal(agregado.Flatten().InnerExceptions(0))
+        End If
+
+        If ex.InnerException IsNot Nothing AndAlso Not TypeOf ex Is SqlException Then
+            Return ObtenerErrorReal(ex.InnerException)
+        End If
+
+        Return ex
+    End Function
+
+    ' Limita el detalle tecnico para que sea legible dentro del dialogo del sistema.
+    Private Function ResumirDetalle(detalle As String) As String
+        If String.IsNullOrWhiteSpace(detalle) Then Return "Sin detalle adicional."
+
+        Dim limpio As String = detalle.Replace(vbCr, " ").Replace(vbLf, " ").Trim()
+        If limpio.Length > 115 Then
+            Return limpio.Substring(0, 112) & "..."
+        End If
+
+        Return limpio
     End Function
 
     ' Ejecuta una consulta SELECT parametrizada y devuelve los resultados en un DataTable.

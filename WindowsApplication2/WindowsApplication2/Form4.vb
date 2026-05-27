@@ -360,7 +360,7 @@ Public Class Form4
             CargarDetalleVentaSeleccionada()
 
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Ventas no disponibles", "No se pudieron cargar las ventas del historial." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Ventas no disponibles", CrearMensajeErrorDatos("cargar el historial", ex), ModMensajes.TipoAviso.Error)
         Finally
             sbInfo.Text = "  Ventas: " & lblVentasVal.Text & "  |  Ingresos: " & lblIngresosVal.Text & "  |  " & dtpFecha.Value.ToString("dd/MM/yyyy")
             gbTabla.Text = "Ventas del dia - " & dtpFecha.Value.ToString("dd/MM/yyyy")
@@ -433,7 +433,7 @@ Public Class Form4
                 lblDetalleResumen.Text = "Venta V-" & id.ToString("000")
             End If
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Detalle no disponible", "No se pudo cargar el detalle de la venta." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Detalle no disponible", CrearMensajeErrorDatos("cargar el detalle de la venta", ex), ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 

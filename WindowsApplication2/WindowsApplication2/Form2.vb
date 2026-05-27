@@ -162,6 +162,18 @@ Public Class Form2
         Try
             sbInfo.Text = "   Cargando catalogo y folio..."
 
+            Dim validacion = Await Task.Run(Function()
+                                                 Dim mensaje As String = ""
+                                                 If ProbarConexionAplicacion(mensaje) Then Return ""
+                                                 Return mensaje
+                                             End Function)
+            If validacion <> "" Then
+                lblNumVenta.Text = "Ticket #V-001"
+                sbInfo.Text = "   SQL Server Express no esta listo."
+                ModMensajes.Mostrar(Me, "Conexion no disponible", validacion, ModMensajes.TipoAviso.Error)
+                Return
+            End If
+
             Dim sqlCategorias = "SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat"
             Dim sqlProductos = ObtenerSqlProductos()
             Dim sqlNumVenta = "SELECT ISNULL(MAX(Id_Pedido),0)+1 FROM PEDIDOS"
@@ -183,7 +195,7 @@ Public Class Form2
             If Me.IsDisposed Then Return
             lblNumVenta.Text = "Ticket #V-001"
             sbInfo.Text = "   La caja abrio, pero no se pudo cargar el catalogo."
-            ModMensajes.Mostrar(Me, "Catalogo no disponible", "La caja abrio, pero no se pudo cargar el catalogo." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Catalogo no disponible", CrearMensajeErrorDatos("cargar el catalogo", ex), ModMensajes.TipoAviso.Error)
         Finally
             If Not Me.IsDisposed Then
                 btnAgregar.Enabled = True
@@ -756,8 +768,12 @@ Public Class Form2
 
     ' Consulta las categorias desde la base de datos y las aplica al combo.
     Private Sub CargarCategorias()
-        Dim tabla = ObtenerTabla("SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat")
-        AplicarCategorias(tabla)
+        Try
+            Dim tabla = ObtenerTabla("SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat")
+            AplicarCategorias(tabla)
+        Catch ex As Exception
+            ModMensajes.Mostrar(Me, "Categorias no disponibles", CrearMensajeErrorDatos("cargar las categorias", ex), ModMensajes.TipoAviso.Error)
+        End Try
     End Sub
 
     ' Llena el combo de categorias y actualiza el contador visual.
@@ -798,7 +814,7 @@ Public Class Form2
         Try
             AplicarProductos(ObtenerTabla(ObtenerSqlProductos()))
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Catalogo no disponible", "No se pudieron cargar los productos." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Catalogo no disponible", CrearMensajeErrorDatos("cargar los productos", ex), ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -1718,15 +1734,15 @@ Public Class Form2
         Try
             AsegurarColumnasPagoPedido()
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "No se pudo guardar", "La base de datos no quedo lista para registrar el pago." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "No se pudo guardar", CrearMensajeErrorDatos("preparar la venta", ex), ModMensajes.TipoAviso.Error)
             Return
         End Try
 
         Using cn = ObtenerConexion()
-            cn.Open()
-            Dim trans = cn.BeginTransaction()
-
+            Dim trans As SqlTransaction = Nothing
             Try
+                cn.Open()
+                trans = cn.BeginTransaction()
                 Dim idCliente As Integer = ObtenerIdClienteGeneral(trans)
 
                 Using cmdPedido As New SqlCommand(
@@ -1784,8 +1800,8 @@ Public Class Form2
                 ModActualizaciones.NotificarVentasActualizadas()
 
             Catch ex As Exception
-                trans.Rollback()
-                ModMensajes.Mostrar(Me, "No se pudo guardar", "La venta no se registro." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+                If trans IsNot Nothing Then trans.Rollback()
+                ModMensajes.Mostrar(Me, "No se pudo guardar", CrearMensajeErrorDatos("registrar la venta", ex), ModMensajes.TipoAviso.Error)
                 idPedido = 0
             End Try
         End Using

@@ -245,18 +245,22 @@ Public Class Form3
 
     ' Consulta las categorias desde la base de datos y las aplica al combo.
     Private Sub CargarCategorias()
-        Dim tabla = ObtenerTabla("SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat")
-        cbCategoria.Items.Clear()
-        cbCatDetalle.Items.Clear()
-        cbCategoria.Items.Add("(Todas)")
+        Try
+            Dim tabla = ObtenerTabla("SELECT NombreCat FROM " & TablaCategorias() & " ORDER BY NombreCat")
+            cbCategoria.Items.Clear()
+            cbCatDetalle.Items.Clear()
+            cbCategoria.Items.Add("(Todas)")
 
-        For Each row As DataRow In tabla.Rows
-            cbCategoria.Items.Add(row("NombreCat").ToString())
-            cbCatDetalle.Items.Add(row("NombreCat").ToString())
-        Next
+            For Each row As DataRow In tabla.Rows
+                cbCategoria.Items.Add(row("NombreCat").ToString())
+                cbCatDetalle.Items.Add(row("NombreCat").ToString())
+            Next
 
-        cbCategoria.SelectedIndex = 0
-        If cbCatDetalle.Items.Count > 0 Then cbCatDetalle.SelectedIndex = 0
+            cbCategoria.SelectedIndex = 0
+            If cbCatDetalle.Items.Count > 0 Then cbCatDetalle.SelectedIndex = 0
+        Catch ex As Exception
+            ModMensajes.Mostrar(Me, "Categorias no disponibles", CrearMensajeErrorDatos("cargar las categorias", ex), ModMensajes.TipoAviso.Error)
+        End Try
     End Sub
 
     ' Carga productos con precio, stock y categoria desde la base.
@@ -274,7 +278,7 @@ Public Class Form3
             lblInfo.Text = dtProductos.Rows.Count & " productos registrados"
             sbInfo.Text = "  " & lblInfo.Text
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Inventario no disponible", "No se pudieron cargar los productos." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Inventario no disponible", CrearMensajeErrorDatos("cargar el inventario", ex), ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -347,10 +351,10 @@ Public Class Form3
         End If
 
         Using cn = ObtenerConexion()
-            cn.Open()
-            Dim trans = cn.BeginTransaction()
-
+            Dim trans As SqlTransaction = Nothing
             Try
+                cn.Open()
+                trans = cn.BeginTransaction()
                 Dim idCategoria As Integer
                 Using cmdCat As New SqlCommand(
                     "SELECT Id_Categoria FROM " & TablaCategorias() & " WHERE NombreCat = @nombre",
@@ -413,8 +417,8 @@ Public Class Form3
                 ModActualizaciones.NotificarInventarioActualizado()
 
             Catch ex As Exception
-                trans.Rollback()
-                ModMensajes.Mostrar(Me, "No se pudo guardar", "No se guardo el producto." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+                If trans IsNot Nothing Then trans.Rollback()
+                ModMensajes.Mostrar(Me, "No se pudo guardar", CrearMensajeErrorDatos("guardar el producto", ex), ModMensajes.TipoAviso.Error)
             End Try
         End Using
 
@@ -426,10 +430,10 @@ Public Class Form3
         If idSeleccionado = 0 Then ModMensajes.Mostrar(Me, "Selecciona un producto", "Elige un producto de la lista antes de eliminarlo.", ModMensajes.TipoAviso.Advertencia) : Return
         If ModMensajes.Confirmar(Me, "Eliminar producto", "Deseas eliminar " & txtNombre.Text & " del inventario?", "Eliminar", "Cancelar", ModMensajes.TipoAviso.Advertencia) Then
             Using cn = ObtenerConexion()
-                cn.Open()
-                Dim trans = cn.BeginTransaction()
-
+                Dim trans As SqlTransaction = Nothing
                 Try
+                    cn.Open()
+                    trans = cn.BeginTransaction()
                     Using cmdInv As New SqlCommand("DELETE FROM INVENTARIO WHERE Id_Producto = @idProducto", cn, trans)
                         cmdInv.Parameters.AddWithValue("@idProducto", idSeleccionado)
                         cmdInv.ExecuteNonQuery()
@@ -445,8 +449,8 @@ Public Class Form3
                     ModActualizaciones.NotificarInventarioActualizado()
 
                 Catch ex As Exception
-                    trans.Rollback()
-                    ModMensajes.Mostrar(Me, "No se pudo eliminar", "El producto no se elimino." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+                    If trans IsNot Nothing Then trans.Rollback()
+                    ModMensajes.Mostrar(Me, "No se pudo eliminar", CrearMensajeErrorDatos("eliminar el producto", ex), ModMensajes.TipoAviso.Error)
                 End Try
             End Using
 

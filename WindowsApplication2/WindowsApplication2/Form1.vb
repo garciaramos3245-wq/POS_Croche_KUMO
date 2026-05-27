@@ -4,6 +4,8 @@ Public Class Form1
 
     ' Controles creados por codigo para complementar el login.
 
+    Private Const ClaveAccesoDemo As String = "1234"
+
     Private pnlIntro As Panel
     Private lblIntroEyebrow As Label
     Private lblIntroTitle As Label
@@ -200,9 +202,19 @@ Public Class Form1
         ConfigurarLayoutAcceso()
     End Sub
 
+    ' Conserva el usuario original de la demo y permite el alias usado actualmente.
+    Private Function CredencialesDemoCorrectas() As Boolean
+        Dim usuario As String = txtUsuario.Text.Trim()
+        Dim usuarioValido As Boolean =
+            String.Equals(usuario, "admin", StringComparison.OrdinalIgnoreCase) OrElse
+            String.Equals(usuario, "usuario", StringComparison.OrdinalIgnoreCase)
+
+        Return usuarioValido AndAlso txtPassword.Text = ClaveAccesoDemo
+    End Function
+
     ' Valida usuario y contrasena; si son correctos abre el punto de venta.
     Private Sub btnEntrar_Click(sender As Object, e As EventArgs) Handles btnEntrar.Click
-        If txtUsuario.Text.Trim() = "admin" AndAlso txtPassword.Text = "1234" Then
+        If CredencialesDemoCorrectas() Then
             Me.Hide()
             Using principal As New Form2()
                 principal.ShowDialog()

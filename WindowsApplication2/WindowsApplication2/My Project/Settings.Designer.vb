@@ -56,7 +56,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Server=UZZIEL\SQLEXPRESS;Database=KUMOBD;Integrated security=true")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Server=.\SQLEXPRESS;Database=KUMOBD;Integrated Security=True;Connect Timeout=5;Application Name=KUMO POS")>  _
         Public ReadOnly Property Con_Croche() As String
             Get
                 Return CType(Me("Con_Croche"),String)

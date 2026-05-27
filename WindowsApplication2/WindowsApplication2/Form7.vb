@@ -365,7 +365,7 @@ Public Class Form7
             CargarDetalleVentaSeleccionada()
 
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Reporte no disponible", "No se pudo cargar el reporte." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Reporte no disponible", CrearMensajeErrorDatos("cargar el reporte", ex), ModMensajes.TipoAviso.Error)
         Finally
             sbInfo.Text = "  Reporte: " & dtpFecha.Value.ToString("dd/MM/yyyy") &
                           "  |  Ventas: " & lblVentasVal.Text &
@@ -439,7 +439,7 @@ Public Class Form7
                 lblDetalleResumen.Text = "Venta V-" & id.ToString("000")
             End If
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Detalle no disponible", "No se pudo cargar el detalle de la venta." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Detalle no disponible", CrearMensajeErrorDatos("cargar el detalle del reporte", ex), ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 

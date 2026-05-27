@@ -159,7 +159,7 @@ Public Class Form6
             PintarMetaTicket(datos)
             RenderizarTicket(datos)
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Ticket no disponible", "No se pudo generar la vista del ticket." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Ticket no disponible", CrearMensajeErrorDatos("cargar el ticket", ex), ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 

@@ -198,7 +198,7 @@ Public Class Form8
                 sbInfo.Text = "  Ventas del " & dtpFecha.Value.ToString("dd/MM/yyyy") &
                               "  |  Total registros: " & dt.Rows.Count
             Catch ex As Exception
-                ModMensajes.Mostrar(Me, "Ventas no disponibles", "No se pudieron cargar las ventas para cancelar." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+                ModMensajes.Mostrar(Me, "Ventas no disponibles", CrearMensajeErrorDatos("cargar las ventas para cancelar", ex), ModMensajes.TipoAviso.Error)
             End Try
         End Using
     End Sub
@@ -228,7 +228,7 @@ Public Class Form8
                 dgvDetalle.DataSource = dt
                 gbDetalle.Text = "Detalle de Venta - V-" & id.ToString("000")
             Catch ex As Exception
-                ModMensajes.Mostrar(Me, "Detalle no disponible", "No se pudo cargar el detalle de la venta." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+                ModMensajes.Mostrar(Me, "Detalle no disponible", CrearMensajeErrorDatos("cargar el detalle de la venta", ex), ModMensajes.TipoAviso.Error)
             End Try
         End Using
     End Sub
@@ -252,11 +252,11 @@ Public Class Form8
                                      "Cancelar venta", "Regresar", ModMensajes.TipoAviso.Advertencia) Then Return
 
         Using cn = ObtenerConexion()
-            AsegurarColumnasPagoPedido()
-            cn.Open()
-            Dim trans = cn.BeginTransaction()
-
+            Dim trans As SqlTransaction = Nothing
             Try
+                AsegurarColumnasPagoPedido()
+                cn.Open()
+                trans = cn.BeginTransaction()
                 Using cmdEstado As New SqlCommand(
                     "SELECT ISNULL(Cancelada, 0) FROM PEDIDOS WITH (UPDLOCK, HOLDLOCK) WHERE Id_Pedido = @id",
                     cn,
@@ -311,8 +311,8 @@ Public Class Form8
                 ModActualizaciones.NotificarVentasActualizadas()
 
             Catch ex As Exception
-                trans.Rollback()
-                ModMensajes.Mostrar(Me, "No se pudo cancelar", "La venta no se cancelo." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+                If trans IsNot Nothing Then trans.Rollback()
+                ModMensajes.Mostrar(Me, "No se pudo cancelar", CrearMensajeErrorDatos("cancelar la venta", ex), ModMensajes.TipoAviso.Error)
             End Try
         End Using
 

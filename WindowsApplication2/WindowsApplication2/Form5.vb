@@ -287,7 +287,7 @@ Public Class Form5
             FormatearColumnasPedidos()
             sbInfo.Text = "  " & dt.Rows.Count & " pedidos registrados"
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Pedidos no disponibles", "No se pudieron cargar los pedidos." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Pedidos no disponibles", CrearMensajeErrorDatos("cargar los pedidos", ex), ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -356,7 +356,7 @@ Public Class Form5
             End If
 
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Detalle no disponible", "No se pudo cargar el detalle del pedido." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Detalle no disponible", CrearMensajeErrorDatos("cargar el detalle del pedido", ex), ModMensajes.TipoAviso.Error)
         End Try
     End Sub
 
@@ -452,15 +452,15 @@ Public Class Form5
         Try
             AsegurarColumnasDetallePedido()
         Catch ex As Exception
-            ModMensajes.Mostrar(Me, "Base no disponible", "No se pudieron preparar los campos del pedido." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+            ModMensajes.Mostrar(Me, "Base no disponible", CrearMensajeErrorDatos("preparar los campos del pedido", ex), ModMensajes.TipoAviso.Error)
             Return
         End Try
 
         Using cn = ObtenerConexion()
-            cn.Open()
-            Dim trans = cn.BeginTransaction()
-
+            Dim trans As SqlTransaction = Nothing
             Try
+                cn.Open()
+                trans = cn.BeginTransaction()
                 Dim idCliente = ObtenerIdCliente(txtNombre.Text.Trim(), txtTel.Text.Trim(), trans)
                 Dim metodo = ObtenerMetodoPedido()
 
@@ -510,8 +510,8 @@ Public Class Form5
                 ModActualizaciones.NotificarPedidosActualizados()
 
             Catch ex As Exception
-                trans.Rollback()
-                ModMensajes.Mostrar(Me, "No se pudo guardar", "No se guardo el pedido." & vbCrLf & "Detalle: " & ex.Message, ModMensajes.TipoAviso.Error)
+                If trans IsNot Nothing Then trans.Rollback()
+                ModMensajes.Mostrar(Me, "No se pudo guardar", CrearMensajeErrorDatos("guardar el pedido", ex), ModMensajes.TipoAviso.Error)
             End Try
         End Using
 
@@ -528,22 +528,26 @@ Public Class Form5
 
         If Not ModMensajes.Confirmar(Me, "Eliminar pedido", "Deseas eliminar el pedido de " & txtNombre.Text & "?", "Eliminar", "Cancelar", ModMensajes.TipoAviso.Advertencia) Then Return
 
-        Using cn = ObtenerConexion()
-            cn.Open()
-            Using cmdDet As New SqlCommand("DELETE FROM DET_PEDIDOS WHERE Id_Pedido = @id", cn)
-                cmdDet.Parameters.AddWithValue("@id", idSeleccionado)
-                cmdDet.ExecuteNonQuery()
+        Try
+            Using cn = ObtenerConexion()
+                cn.Open()
+                Using cmdDet As New SqlCommand("DELETE FROM DET_PEDIDOS WHERE Id_Pedido = @id", cn)
+                    cmdDet.Parameters.AddWithValue("@id", idSeleccionado)
+                    cmdDet.ExecuteNonQuery()
+                End Using
+                Using cmd As New SqlCommand("DELETE FROM PEDIDOS WHERE Id_Pedido = @id", cn)
+                    cmd.Parameters.AddWithValue("@id", idSeleccionado)
+                    cmd.ExecuteNonQuery()
+                End Using
             End Using
-            Using cmd As New SqlCommand("DELETE FROM PEDIDOS WHERE Id_Pedido = @id", cn)
-                cmd.Parameters.AddWithValue("@id", idSeleccionado)
-                cmd.ExecuteNonQuery()
-            End Using
-        End Using
 
-        ModMensajes.Mostrar(Me, "Pedido eliminado", "El pedido se elimino correctamente.", ModMensajes.TipoAviso.Exito)
-        ModActualizaciones.NotificarPedidosActualizados()
-        CargarPedidos()
-        btnNuevo_Click(Nothing, Nothing)
+            ModMensajes.Mostrar(Me, "Pedido eliminado", "El pedido se elimino correctamente.", ModMensajes.TipoAviso.Exito)
+            ModActualizaciones.NotificarPedidosActualizados()
+            CargarPedidos()
+            btnNuevo_Click(Nothing, Nothing)
+        Catch ex As Exception
+            ModMensajes.Mostrar(Me, "No se pudo eliminar", CrearMensajeErrorDatos("eliminar el pedido", ex), ModMensajes.TipoAviso.Error)
+        End Try
     End Sub
 
     ' Cierra el formulario actual.
